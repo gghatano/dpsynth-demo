@@ -53,8 +53,18 @@ fi
 # 6. venv + install
 echo "[setup] creating venv (.venv) with Python 3.12"
 uv venv --python 3.12 .venv
-echo "[setup] installing dpsynth + demo deps (this can take a few minutes)"
-uv pip install --python .venv ./src \
-  matplotlib scikit-learn tqdm scipy networkx markdown pygments
+
+if [ -f requirements.txt ]; then
+  # 再現性重視: ロックファイルで全依存をバージョン固定 → dpsynth 本体は --no-deps で追加
+  echo "[setup] installing pinned deps from requirements.txt (reproducible)"
+  uv pip install --python .venv -r requirements.txt
+  echo "[setup] installing dpsynth (patched src, --no-deps)"
+  uv pip install --python .venv --no-deps ./src
+else
+  # フォールバック: ロックファイルが無い場合は最新解決（バージョンは固定されない）
+  echo "[setup] requirements.txt not found; installing latest (NOT pinned)"
+  uv pip install --python .venv ./src \
+    matplotlib scikit-learn tqdm scipy networkx markdown pygments
+fi
 
 echo "[setup] done. next:  bash scripts/run_all.sh"

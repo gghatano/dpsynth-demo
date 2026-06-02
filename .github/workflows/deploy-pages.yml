@@ -8,6 +8,7 @@ on:
     branches: [main]
     paths:
       - "REPORT.md"
+      - "EXPERIMENTS.md"
       - "figures/**"
       - "scripts/03_build_html.py"
       - ".github/workflows/deploy-pages.yml"

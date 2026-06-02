@@ -38,20 +38,35 @@ bash scripts/run_all.sh     # データ取得 → DP 合成生成 → 評価 →
 
 ```
 dpsynth-demo/
-├── README.md              … 本ファイル（再現手順）
-├── REPORT.md / .html      … 解説・利用例・メリデメ・デモ結果レポート
+├── README.md                  … 本ファイル（再現手順）
+├── REPORT.md / .html          … 解説・利用例・メリデメ・デモ結果レポート（本体）
+├── EXPERIMENTS.md / .html     … 追加実験（numerical_bins・マルチシード・2-way）
+├── requirements.txt           … 全依存をバージョン固定したロックファイル（再現性の要）
 ├── scripts/
-│   ├── setup_env.sh       … 環境構築（uv・dpsynth クローン&パッチ・venv・依存）一括
-│   ├── run_all.sh         … 00→03 を一括実行
-│   ├── 00_prepare_data.py … Adult データ取得・ヘッダー付与・整形
-│   ├── 01_generate.py     … DPSynth で DP 合成データを生成（MST/AIM/INDEPENDENT + ε スイープ）
-│   ├── 02_evaluate.py     … 1-way TVD / 相関誤差 / TSTR で品質評価し図を出力
-│   └── 03_build_html.py   … REPORT.md → 自己完結 HTML / Pages 用 _site を生成
-├── patches/               … dpsynth への最小修正パッチ（INDEPENDENT 機構の重複クリーク対策）
-├── data/                  … 入力データ（自動取得、git 管理外）
-├── outputs/               … 合成 CSV・metrics.json・run_meta.json
-├── figures/               … 評価図 PNG
-└── src/                   … dpsynth のクローン（setup_env.sh が取得・パッチ。git 管理外）
+│   ├── setup_env.sh           … 環境構築（uv・dpsynth クローン&パッチ・venv・固定依存）一括
+│   ├── run_all.sh             … 00→02→10→03 を一括実行
+│   ├── 00_prepare_data.py     … Adult データ取得・ヘッダー付与・整形
+│   ├── 01_generate.py         … DP 合成データ生成（MST/AIM/INDEPENDENT + ε スイープ）
+│   ├── 02_evaluate.py         … 1-way TVD / 相関誤差 / TSTR で品質評価し図を出力
+│   ├── 10_experiments.py      … 追加実験 A/B/C を実行し図を出力
+│   ├── 03_build_html.py       … REPORT/EXPERIMENTS → 自己完結 HTML / Pages 用 _site を生成
+│   └── create_issues.sh       … docs/BACKLOG.md を GitHub Issue に一括登録（要 gh 認証）
+├── patches/                   … dpsynth への最小修正パッチ（INDEPENDENT 機構の重複クリーク対策）
+├── docs/BACKLOG.md            … 今後の課題（Issue 化候補）
+├── data/                      … 入力データ（自動取得、git 管理外）
+├── outputs/ figures/ experiments/ … 合成 CSV・指標・評価図
+└── src/                       … dpsynth のクローン（setup_env.sh が取得・パッチ。git 管理外）
+```
+
+## 再現性（バージョン固定）
+
+`scripts/setup_env.sh` は **[`requirements.txt`](requirements.txt)** で全推移的依存をバージョン固定して
+インストールします（`jax` / `mbi` / `numpy` 等のバージョン差による乱数列の揺れを排除）。
+`mbi` はコミットハッシュまで固定。生成元は Python 3.12.3 / WSL2 です。
+
+```bash
+uv pip install -r requirements.txt        # 固定依存
+uv pip install --no-deps ./src            # dpsynth 本体（patches 適用済み）
 ```
 
 ## 動作環境（重要）
@@ -81,6 +96,17 @@ DP 合成データの再生成は不要で、`markdown` だけで数十秒でビ
 3. 完了後、`https://gghatano.github.io/dpsynth-demo/` で公開されます。
 
 ローカル確認: `python -m http.server 8099 --directory _site` → http://localhost:8099/
+公開ページは **レポート(index)** と **追加実験(experiments)** の2ページ構成（上部タブで切替）。
+
+## 今後の課題（Issue 一括作成）
+
+今後やると良い項目を [`docs/BACKLOG.md`](docs/BACKLOG.md) にまとめています。
+`gh` を github.com に認証済みなら、以下で GitHub Issue として一括登録できます。
+
+```bash
+gh auth login --hostname github.com   # 未認証の場合
+bash scripts/create_issues.sh         # origin のリポジトリに Issue を作成
+```
 
 ## データ出典
 

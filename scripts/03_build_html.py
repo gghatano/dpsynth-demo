@@ -138,6 +138,13 @@ h2 { font-size: 1.45rem; margin-top: 2.2em; border-bottom: 1px solid var(--line)
 h3 { font-size: 1.16rem; margin-top: 1.7em; color: #222; scroll-margin-top: 16px; }
 h4 { font-size: 1.0rem; margin-top: 1.3em; color: var(--accent); }
 a { color: #1565c0; text-decoration: none; } a:hover { text-decoration: underline; }
+/* 出典タグ [n]（href="#refN"）を小さな上付きチップに */
+a[href^="#ref"] { font-size: .72em; vertical-align: super; line-height: 0; color: #1565c0;
+  background: #eef4fb; border: 1px solid #cfe0f3; border-radius: 4px; padding: 0 4px;
+  margin: 0 1px; text-decoration: none; white-space: nowrap; }
+a[href^="#ref"]:hover { background: #d7e8fb; text-decoration: none; }
+/* 出典リスト本体（付録C）のアンカー位置調整 */
+:target { scroll-margin-top: 18px; }
 code { background: var(--code); padding: .15em .4em; border-radius: 4px; font-size: .88em;
   font-family: "Cascadia Code", Consolas, "SF Mono", monospace; }
 pre { background: var(--code); padding: 15px 18px; border-radius: 8px; overflow-x: auto;

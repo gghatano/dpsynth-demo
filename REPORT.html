@@ -53,6 +53,8 @@ th { background: #f2f4f7; font-weight: 600; }
 tr:nth-child(even) td { background: #fbfbfc; }
 img { max-width: 100%; height: auto; display: block; margin: 1.2em auto; border: 1px solid var(--line);
   border-radius: 8px; }
+.mermaid { background: #fff; border: 1px solid var(--line); border-radius: 8px;
+  padding: 14px; margin: 1.4em 0; text-align: center; overflow-x: auto; }
 blockquote { border-left: 4px solid var(--accent); margin: 1.2em 0; padding: .4em 1.2em;
   background: #fdf3f2; color: #444; border-radius: 0 6px 6px 0; }
 hr { border: none; border-top: 1px solid var(--line); margin: 2.2em 0; }
@@ -95,8 +97,8 @@ footer { max-width: 1180px; margin: 0 auto; padding: 24px; color: var(--muted); 
 </li>
 <li><a href="#4">4. 利用例(ユースケース)</a></li>
 <li><a href="#5">5. メリット / デメリット</a><ul>
-<li><a href="#_1">メリット</a></li>
-<li><a href="#_2">デメリット / 注意点</a></li>
+<li><a href="#_2">メリット</a></li>
+<li><a href="#_3">デメリット / 注意点</a></li>
 </ul>
 </li>
 <li><a href="#6-uci-adult-income">6. 実証デモ: UCI Adult Income で生成・評価</a><ul>
@@ -111,6 +113,7 @@ footer { max-width: 1180px; margin: 0 auto; padding: 24px; color: var(--muted); 
 <li><a href="#8">8. まとめ</a></li>
 <li><a href="#a-clone">付録 A. 再現手順(clone してコマンド実行で再現)</a></li>
 <li><a href="#b">付録 B. 参考文献・リンク</a></li>
+<li><a href="#c">付録 C. 出典・参照箇所(どの文書のどこに基づくか)</a></li>
 </ul>
 </div>
 </nav>
@@ -154,11 +157,37 @@ footer { max-width: 1180px; margin: 0 auto; padding: 24px; color: var(--muted); 
 <h3 id="13">1.3 仕組み(なぜ「合成」できるのか)</h3>
 <p>DPSynth の中核は <strong>「低次元の周辺分布(1-way / 2-way マージナル)を DP 付きで測定し、それらと整合する同時分布をグラフィカルモデルで推定 → サンプリング」</strong> という流れ。
 個々のレコードを覚えるのではなく、<strong>ノイズを加えた集計統計量だけ</strong>からモデルを作るため、DP が成立する。</p>
-<div class="codehilite"><pre><span></span><code>機微データ ──&gt; 離散化/整数符号化 ──&gt; 1-way マージナル測定(+ノイズ)・ドメイン圧縮
-            ──&gt; DP機構(AIM/MST等)が有用なマージナルを選び測定 ──&gt; Private-PGM で同時分布を推定
-            ──&gt; 合成レコードをサンプリング ──&gt; 元のスキーマ/型へ復号 ──&gt; DP 合成データ
-</code></pre></div>
-
+<h4 id="mermaid">データ合成プロセス(mermaid)</h4>
+<div class="mermaid">
+flowchart TD
+    A[機微なテーブルデータ] --> B[離散化・整数符号化]
+    B --> C["1-way マージナル測定 + ガウスノイズ<br/>ドメイン圧縮（稀カテゴリを Other へ）"]
+    C --> D{DP 機構を選択}
+    D -->|MST| E1["ペア相関の最大全域木<br/>+ 指数機構"]
+    D -->|AIM| E2["ワークロード適応で<br/>マージナルを反復選択・測定"]
+    D -->|INDEPENDENT| E3["1-way のみ<br/>全属性を独立とみなす"]
+    E1 --> F["Private-PGM / mbi<br/>マルコフ確率場をミラー降下で推定"]
+    E2 --> F
+    E3 --> F
+    F --> G[グラフィカルモデルから合成レコードをサンプリング]
+    G --> H[元のスキーマ・型へ復号]
+    H --> I([DP 合成テーブルデータ])
+</div>
+<h4 id="_1">コンセプト: 既存手法の「組み合わせ」</h4>
+<p>DPSynth は新しい DP アルゴリズムを発明したというより、<strong>マージナル選択機構(AIM/MST)+ グラフィカルモデル推定(Private-PGM)+ DP 予算会計 + 分散集計基盤</strong>という
+<strong>既存の確立した部品を統合</strong>したフレームワークである。</p>
+<div class="mermaid">
+flowchart LR
+    AIMp["AIM<br/>arXiv:2201.12677"] --> DPS
+    MSTp["MST<br/>arXiv:2108.04978"] --> DPS
+    MBI["Private-PGM / mbi<br/>マルコフ確率場推定"] --> DPS
+    ACC["dp_accounting<br/>zCDP/ガウス機構の予算会計"] --> DPS
+    PDP["pipeline_dp<br/>ローカル/分散のDP集計基盤"] --> DPS
+    DPS{{DPSynth<br/>統合フレームワーク}} --> OUT([DP 合成テーブルデータ])
+</div>
+<blockquote>
+<p>どの機構を選んでも推定エンジンは共通の <strong>Private-PGM(<code>mbi</code>)</strong>。機構は「<strong>どのマージナルをどう測るか</strong>」の戦略の違い、と捉えると見通しが良い。</p>
+</blockquote>
 <hr />
 <h2 id="2">2. アーキテクチャと対応アルゴリズム</h2>
 <h3 id="21-2">2.1 2 つの実行モデル</h3>
@@ -353,7 +382,7 @@ footer { max-width: 1180px; margin: 0 auto; padding: 24px; color: var(--muted); 
 </ol>
 <hr />
 <h2 id="5">5. メリット / デメリット</h2>
-<h3 id="_1">メリット</h3>
+<h3 id="_2">メリット</h3>
 <ul>
 <li><strong>数学的なプライバシー保証</strong>: ヒューリスティックな匿名化と違い <code>(ε, δ)</code>-DP を満たす。リンケージ攻撃に強い。</li>
 <li><strong>相関・同時分布の保持</strong>: MST/AIM は属性間の相関を捉え、単純な独立サンプリングより遥かに有用なデータを作る(本デモで実証)。</li>
@@ -362,7 +391,7 @@ footer { max-width: 1180px; margin: 0 auto; padding: 24px; color: var(--muted); 
 <li><strong>DP 合成の SOTA を実装</strong>: AIM/MST/Private-PGM は DP 合成データ研究のベンチマークで上位の手法群。</li>
 <li><strong>予算で有用性を制御可能</strong>: ε を上げ下げしてプライバシーと有用性のトレードオフを調整できる。</li>
 </ul>
-<h3 id="_2">デメリット / 注意点</h3>
+<h3 id="_3">デメリット / 注意点</h3>
 <ul>
 <li><strong>非公式・研究段階</strong>: 「公式サポート対象外の Google プロダクト」と明記され、脆弱性報奨制度の対象外。
   実際、本デモでも <strong>INDEPENDENT 機構が新しい <code>mbi</code> と非互換でクラッシュ</strong>(後述)するなど、実装の粗さに遭遇した。</li>
@@ -583,10 +612,99 @@ bash<span class="w"> </span>scripts/run_all.sh
 <li>pipeline_dp: https://github.com/google/pipeline-dp</li>
 <li>AIM: McKenna et al., <em>AIM: An Adaptive and Iterative Mechanism for Differentially Private Synthetic Data</em> — <a href="https://arxiv.org/abs/2201.12677">arXiv:2201.12677</a></li>
 <li>MST: McKenna et al., <em>Winning the NIST Contest: A scalable and general approach to differentially private synthetic data</em> — <a href="https://arxiv.org/abs/2108.04978">arXiv:2108.04978</a></li>
-</ul></article>
+</ul>
+<h2 id="c">付録 C. 出典・参照箇所(どの文書のどこに基づくか)</h2>
+<p>本レポートの主張が、upstream の <strong>どの文書のどのあたり</strong>に基づくかの対応表。
+( <code>docs/</code> は <a href="https://github.com/google/dpsynth/tree/main/dpsynth/documentation">google/dpsynth/dpsynth/documentation/</a> を指す)</p>
+<table>
+<thead>
+<tr>
+<th>レポート箇所</th>
+<th>主な主張</th>
+<th>出典(文書・該当箇所)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>§1.1–1.2 課題・DP</td>
+<td>匿名化の限界、<code>(ε, δ)</code>-DP で共有可能に</td>
+<td><a href="https://github.com/google/dpsynth/blob/main/dpsynth/documentation/index.md">docs/index.md</a> の "Why DPSynth?"</td>
+</tr>
+<tr>
+<td>§1.3 仕組み / 合成プロセス図</td>
+<td>マージナル測定 → PGM 推定 → サンプリングの 5 段階</td>
+<td><a href="https://github.com/google/dpsynth/blob/main/dpsynth/documentation/in_memory_api.md">docs/in_memory_api.md</a> の "Under the Hood: The In-Memory Lifecycle" / <a href="https://github.com/google/dpsynth/blob/main/dpsynth/documentation/processing_lifecycle.md">docs/processing_lifecycle.md</a></td>
+</tr>
+<tr>
+<td>§1.4 コンセプト図(既存手法の組合せ)</td>
+<td>AIM/MST + Private-PGM + dp_accounting + pipeline_dp の統合</td>
+<td><a href="https://github.com/google/dpsynth/blob/main/README.md">README.md</a> の "Project Structure &amp; Modules" / 各 arXiv / <a href="https://github.com/ryan112358/mbi">mbi</a> / <a href="https://github.com/google/pipeline-dp">pipeline-dp</a></td>
+</tr>
+<tr>
+<td>§2.1 2 つの実行モデル</td>
+<td>In-Memory と Scalable Pipeline(Beam)</td>
+<td><a href="https://github.com/google/dpsynth/blob/main/dpsynth/documentation/index.md">docs/index.md</a> の "Core APIs and Execution Models"</td>
+</tr>
+<tr>
+<td>§2.2 5 段階ライフサイクル</td>
+<td>離散化→符号化→圧縮→機構→復号</td>
+<td><a href="https://github.com/google/dpsynth/blob/main/dpsynth/documentation/in_memory_api.md">docs/in_memory_api.md</a> の "Under the Hood"</td>
+</tr>
+<tr>
+<td>§2.3 対応アルゴリズム</td>
+<td>AIM/MST/SWIFT/INDEPENDENT</td>
+<td><a href="https://github.com/google/dpsynth/blob/main/dpsynth/documentation/index.md">docs/index.md</a> の "Supported Synthesis Algorithms" + arXiv:2201.12677 / 2108.04978</td>
+</tr>
+<tr>
+<td>§2.4 属性型</td>
+<td>Categorical / OpenSet / Numerical</td>
+<td><a href="https://github.com/google/dpsynth/blob/main/dpsynth/documentation/data_and_terminology.md">docs/data_and_terminology.md</a> の "Supported Attribute Classifications"</td>
+</tr>
+<tr>
+<td>§3.1 <code>generate</code> API</td>
+<td>引数・既定値</td>
+<td><a href="https://github.com/google/dpsynth/blob/main/dpsynth/documentation/in_memory_api.md">docs/in_memory_api.md</a> の "Function Signature" / ソース <a href="https://github.com/google/dpsynth/blob/main/dpsynth/data_generation_v2.py"><code>data_generation_v2.py</code></a></td>
+</tr>
+<tr>
+<td>§3.2 domain.yaml / CLI</td>
+<td>YAML 規則・<code>bin/main.py</code> フラグ</td>
+<td><a href="https://github.com/google/dpsynth/blob/main/dpsynth/documentation/data_and_terminology.md">docs/data_and_terminology.md</a> "Writing a domain.yaml" / <a href="https://github.com/google/dpsynth/blob/main/dpsynth/documentation/in_memory_api.md">docs/in_memory_api.md</a> "Command-Line Interface"</td>
+</tr>
+<tr>
+<td>§3.3 Beam API</td>
+<td><code>data_generation.generate</code> + BeamBackend</td>
+<td><a href="https://github.com/google/dpsynth/blob/main/dpsynth/documentation/scalable_beam_api.md">docs/scalable_beam_api.md</a> / <a href="https://github.com/google/dpsynth/blob/main/dpsynth/examples/quickstart.ipynb">examples/quickstart.ipynb</a></td>
+</tr>
+<tr>
+<td>§5 非公式・非サポート</td>
+<td>"not an officially supported Google product"</td>
+<td><a href="https://github.com/google/dpsynth/blob/main/README.md">README.md</a> 末尾</td>
+</tr>
+<tr>
+<td>§6 デモの数値</td>
+<td>TVD / 相関誤差 / TSTR の各値</td>
+<td><strong>本デモの実測</strong>(<a href="outputs/metrics.json"><code>outputs/metrics.json</code></a>、図は <code>figures/</code>)</td>
+</tr>
+<tr>
+<td>§7 落とし穴</td>
+<td>パッケージング漏れ・INDEPENDENT 重複クリーク等</td>
+<td><strong>本デモでの実測</strong> + ソース <a href="https://github.com/google/dpsynth/blob/main/dpsynth/discrete_mechanisms/independent.py"><code>discrete_mechanisms/independent.py</code></a>(<code>expand</code> 行)・<a href="https://github.com/google/dpsynth/blob/main/dpsynth/data_generation_v2.py"><code>data_generation_v2.py</code></a>(1-way 測定→機構実行)</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>注: upstream ドキュメントは <code>dpsynth/documentation/</code> 配下にあり、各ページ内に明示の行アンカーは無いため、セクション見出し名で位置を示しています。
+§6・§7 の数値・不具合は upstream 文書ではなく、本デモの実行で得た一次情報です。</p>
+</blockquote></article>
 </div>
 <footer>
   Source: <a href="https://github.com/gghatano/dpsynth-demo">https://github.com/gghatano/dpsynth-demo</a> · Upstream: <a href="https://github.com/google/dpsynth">google/dpsynth</a>
 </footer>
+
+<script type="module">
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+  mermaid.initialize({ startOnLoad: true, theme: 'neutral', securityLevel: 'loose' });
+</script>
+
 </body>
 </html>

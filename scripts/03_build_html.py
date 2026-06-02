@@ -47,6 +47,29 @@ def embed_images(md_text: str) -> str:
     return re.sub(r'!\[([^\]]*)\]\(([^)]+\.png)\)', repl, md_text)
 
 
+def extract_mermaid(md_text: str):
+    """```mermaid ブロックを退避し、プレースホルダ段落に置換する。
+
+    codehilite に処理されてソースが壊れるのを避けるため、変換前に抜き出す。
+    戻り値: (置換後テキスト, [mermaidソース, ...])
+    """
+    blocks: list[str] = []
+
+    def repl(m: re.Match) -> str:
+        blocks.append(m.group(1).strip())
+        return f"\n\nxMERMAIDBLOCKx{len(blocks) - 1}x\n\n"
+
+    new = re.sub(r"```mermaid\s*\n(.*?)```", repl, md_text, flags=re.DOTALL)
+    return new, blocks
+
+
+def inject_mermaid(html: str, blocks: list[str]) -> str:
+    for i, src in enumerate(blocks):
+        div = f'<div class="mermaid">\n{src}\n</div>'
+        html = html.replace(f"<p>xMERMAIDBLOCKx{i}x</p>", div)
+    return html
+
+
 CSS = """
 :root { --fg:#1a1a1a; --muted:#666; --accent:#c0392b; --line:#e3e3e3; --bg:#fff;
   --code:#f6f8fa; --sidebar:#fbfbfc; }
@@ -96,6 +119,8 @@ th { background: #f2f4f7; font-weight: 600; }
 tr:nth-child(even) td { background: #fbfbfc; }
 img { max-width: 100%; height: auto; display: block; margin: 1.2em auto; border: 1px solid var(--line);
   border-radius: 8px; }
+.mermaid { background: #fff; border: 1px solid var(--line); border-radius: 8px;
+  padding: 14px; margin: 1.4em 0; text-align: center; overflow-x: auto; }
 blockquote { border-left: 4px solid var(--accent); margin: 1.2em 0; padding: .4em 1.2em;
   background: #fdf3f2; color: #444; border-radius: 0 6px 6px 0; }
 hr { border: none; border-top: 1px solid var(--line); margin: 2.2em 0; }
@@ -121,15 +146,25 @@ def build_nav(active_key: str, available: set[str]) -> str:
     return f'<nav class="nav">{"".join(links)}</nav>'
 
 
+MERMAID_JS = """
+<script type="module">
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+  mermaid.initialize({ startOnLoad: true, theme: 'neutral', securityLevel: 'loose' });
+</script>
+"""
+
+
 def render(page: dict, available: set[str]) -> str:
     md_text = embed_images((ROOT / page["md"]).read_text(encoding="utf-8"))
+    md_text, mermaid_blocks = extract_mermaid(md_text)
     md = markdown.Markdown(
         extensions=["tables", "fenced_code", "toc", "codehilite", "sane_lists"],
         extension_configs={"codehilite": {"guess_lang": False}, "toc": {"toc_depth": "2-3"}},
     )
-    body = md.convert(md_text)
+    body = inject_mermaid(md.convert(md_text), mermaid_blocks)
     toc = md.toc
     nav = build_nav(page["key"], available)
+    mermaid_js = MERMAID_JS if mermaid_blocks else ""
     return f"""<!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -150,6 +185,7 @@ def render(page: dict, available: set[str]) -> str:
 <footer>
   Source: <a href="{REPO_URL}">{REPO_URL}</a> · Upstream: <a href="{UPSTREAM_URL}">google/dpsynth</a>
 </footer>
+{mermaid_js}
 </body>
 </html>"""
 

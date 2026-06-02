@@ -70,6 +70,26 @@ def inject_mermaid(html: str, blocks: list[str]) -> str:
     return html
 
 
+def rewrite_links(html: str) -> str:
+    """Pages では HTML しか配信されないため、ページ内リンクを実在先へ書き換える。
+
+    - REPORT.md / EXPERIMENTS.md → 同一サイトの index.html / experiments.html
+    - その他のリポジトリ相対パス(.md/.txt/patches/ 等) → GitHub の blob URL(Pages に無いため)
+    - 絶対URL・アンカー(#)・data: はそのまま
+    """
+    html = html.replace('href="REPORT.md"', 'href="index.html"')
+    html = html.replace('href="EXPERIMENTS.md"', 'href="experiments.html"')
+
+    def repl(m: re.Match) -> str:
+        href = m.group(1)
+        if href.startswith(("http://", "https://", "#", "mailto:", "data:",
+                            "index.html", "experiments.html")):
+            return m.group(0)
+        return f'href="{REPO_URL}/blob/main/{href}"'
+
+    return re.sub(r'href="([^"]+)"', repl, html)
+
+
 CSS = """
 :root { --fg:#1a1a1a; --muted:#666; --accent:#c0392b; --line:#e3e3e3; --bg:#fff;
   --code:#f6f8fa; --sidebar:#fbfbfc; }
@@ -161,7 +181,7 @@ def render(page: dict, available: set[str]) -> str:
         extensions=["tables", "fenced_code", "toc", "codehilite", "sane_lists"],
         extension_configs={"codehilite": {"guess_lang": False}, "toc": {"toc_depth": "2-3"}},
     )
-    body = inject_mermaid(md.convert(md_text), mermaid_blocks)
+    body = rewrite_links(inject_mermaid(md.convert(md_text), mermaid_blocks))
     toc = md.toc
     nav = build_nav(page["key"], available)
     mermaid_js = MERMAID_JS if mermaid_blocks else ""

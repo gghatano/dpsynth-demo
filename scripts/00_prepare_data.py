@@ -5,11 +5,15 @@
 """
 
 from pathlib import Path
+from urllib.request import urlopen
 import pandas as pd
 
 ROOT = Path(__file__).resolve().parent.parent
 RAW = ROOT / "data" / "adult-all.csv"
 OUT = ROOT / "data" / "adult.csv"
+
+# ヘッダー無し・48,841 行の UCI Adult ミラー（Kaggle 不要で取得可能）
+RAW_URL = "https://raw.githubusercontent.com/jbrownlee/Datasets/master/adult-all.csv"
 
 # UCI Adult の標準カラム順
 COLUMNS = [
@@ -19,7 +23,19 @@ COLUMNS = [
 ]
 
 
+def ensure_raw() -> None:
+    """data/adult-all.csv が無ければミラーから取得する（clone 直後でも動くように）。"""
+    if RAW.exists():
+        return
+    RAW.parent.mkdir(parents=True, exist_ok=True)
+    print(f"downloading {RAW_URL} ...")
+    with urlopen(RAW_URL) as r:  # noqa: S310  公開データセットの取得
+        RAW.write_bytes(r.read())
+    print(f"saved -> {RAW}")
+
+
 def main() -> None:
+    ensure_raw()
     df = pd.read_csv(RAW, header=None, names=COLUMNS, skipinitialspace=True)
     # 文字列カラムの前後空白を除去（ミラーによっては空白が残る）
     for col in df.select_dtypes(include="object").columns:

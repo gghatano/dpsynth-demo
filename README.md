@@ -3,7 +3,36 @@
 [google/dpsynth](https://github.com/google/dpsynth)(差分プライバシーを満たす合成テーブルデータ生成ライブラリ)を
 日本語で解説し、UCI Adult Income データで実際に動かした**デモ**と**レポート**をまとめたリポジトリです。
 
-- 解説・利用例・メリデメ・デモ結果の本体 → **[REPORT.md](REPORT.md)** / **[REPORT.html](REPORT.html)**
+> **⚠️ スコープ**: 本デモ・実験は **In-Memory DataFrame API(`dpsynth.generate`、単一マシン・Pandas)のみ**を対象とします。
+> **Apache Beam を用いた Scalable Pipeline API(分散処理)は対象外**です(機能紹介はしますが実行・評価はしていません)。
+
+- 解説・利用例・メリデメ・デモ結果の本体 → **[REPORT.md](REPORT.md)** / 公開サイト **https://gghatano.github.io/dpsynth-demo/**
+
+## クイックスタート（clone してコマンド実行で再現）
+
+> **前提**: DPSynth は Windows ホイールの無い `python-dp` に依存し、Python は `>=3.12,<3.14` が必要です。
+> **Linux もしくは WSL2 (Ubuntu) + Python 3.12** で実行してください（Windows ネイティブ不可）。
+> Windows の方は WSL を起動し、その中で以下を実行します。
+
+```bash
+git clone https://github.com/gghatano/dpsynth-demo.git
+cd dpsynth-demo
+
+bash scripts/setup_env.sh   # uv 導入・dpsynth クローン&パッチ・venv 作成・依存インストール
+bash scripts/run_all.sh     # データ取得 → DP 合成生成 → 評価 → レポート HTML 生成
+```
+
+実行後、`outputs/`(合成 CSV・`metrics.json`)、`figures/`(評価図)、`REPORT.html` が再生成されます。
+所要時間の目安は合計 5〜10 分程度(初回は依存インストール分が加算)。
+
+### 個別実行
+
+```bash
+.venv/bin/python scripts/00_prepare_data.py   # Adult データ取得・整形（data/adult.csv、無ければ自動DL）
+.venv/bin/python scripts/01_generate.py       # 合成データ生成（MST/AIM/INDEPENDENT + ε スイープ）
+.venv/bin/python scripts/02_evaluate.py       # 1-way TVD / 相関誤差 / TSTR と図生成
+.venv/bin/python scripts/03_build_html.py     # REPORT.html / _site/index.html を生成
+```
 
 ## 構成
 
@@ -12,13 +41,17 @@ dpsynth-demo/
 ├── README.md              … 本ファイル（再現手順）
 ├── REPORT.md / .html      … 解説・利用例・メリデメ・デモ結果レポート
 ├── scripts/
-│   ├── 00_prepare_data.py … Adult データにヘッダー付与・整形
+│   ├── setup_env.sh       … 環境構築（uv・dpsynth クローン&パッチ・venv・依存）一括
+│   ├── run_all.sh         … 00→03 を一括実行
+│   ├── 00_prepare_data.py … Adult データ取得・ヘッダー付与・整形
 │   ├── 01_generate.py     … DPSynth で DP 合成データを生成（MST/AIM/INDEPENDENT + ε スイープ）
-│   └── 02_evaluate.py     … 1-way TVD / 相関誤差 / TSTR で品質評価し図を出力
-├── data/                  … 入力データ（adult.csv ほか）
+│   ├── 02_evaluate.py     … 1-way TVD / 相関誤差 / TSTR で品質評価し図を出力
+│   └── 03_build_html.py   … REPORT.md → 自己完結 HTML / Pages 用 _site を生成
+├── patches/               … dpsynth への最小修正パッチ（INDEPENDENT 機構の重複クリーク対策）
+├── data/                  … 入力データ（自動取得、git 管理外）
 ├── outputs/               … 合成 CSV・metrics.json・run_meta.json
 ├── figures/               … 評価図 PNG
-└── src/                   … dpsynth のクローン（インストール時に最小パッチ済み）
+└── src/                   … dpsynth のクローン（setup_env.sh が取得・パッチ。git 管理外）
 ```
 
 ## 動作環境（重要）
@@ -27,35 +60,11 @@ DPSynth は `pipeline-dp` → `python-dp`(Google C++ 差分プライバシーラ
 **`python-dp` には Windows 用ホイールが存在せず**(Linux / macOS のみ)、Python は `>=3.12,<3.14` が必要です。
 そのため本デモは **WSL2 (Ubuntu 24.04) + Python 3.12 + uv** で実行しています。
 
-### セットアップ（WSL 内）
+`scripts/setup_env.sh` が以下の上流対処を自動で行います（手動で行う場合の内訳）:
 
-```bash
-# 1. uv 導入
-curl -LsSf https://astral.sh/uv/install.sh | sh
-
-# 2. リポジトリ取得 & 軽量化（In-Memory デモには tensorflow 不要なので除外）
-git clone --depth 1 https://github.com/google/dpsynth.git src
-sed -i '/"tensorflow",/d' src/pyproject.toml
-# サブパッケージに __init__.py が無いため補う（パッケージング漏れ対策）
-touch src/dpsynth/{pipeline_transformations,dataset_descriptors,eval,local_mode,bin}/__init__.py
-
-# 3. venv 作成 & インストール
-uv venv --python 3.12 .venv
-uv pip install --python .venv ./src matplotlib scikit-learn tqdm scipy networkx
-```
-
-> 補足: 本デモでは INDEPENDENT 機構の `expand` に重複クリークが渡る上流バグを 1 行修正しています
-> （詳細は REPORT.md、差分は [`patches/independent_dedup_cliques.patch`](patches/independent_dedup_cliques.patch)）。
-> 適用例: `git -C src apply ../patches/independent_dedup_cliques.patch`
-
-### 実行
-
-```bash
-.venv/bin/python scripts/00_prepare_data.py   # データ整形
-.venv/bin/python scripts/01_generate.py       # 合成データ生成
-.venv/bin/python scripts/02_evaluate.py       # 評価 & 図生成
-.venv/bin/python scripts/03_build_html.py     # REPORT.html / _site/index.html を生成
-```
+- `pyproject.toml` から `tensorflow` を除外（In-Memory デモには不要）
+- サブパッケージ(`pipeline_transformations` 等)へ `__init__.py` を補完（パッケージング漏れ対策）
+- INDEPENDENT 機構の重複クリーク・バグを [`patches/independent_dedup_cliques.patch`](patches/independent_dedup_cliques.patch) で 1 行修正
 
 ## GitHub Pages 公開
 

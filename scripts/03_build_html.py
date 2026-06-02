@@ -90,6 +90,17 @@ def rewrite_links(html: str) -> str:
     return re.sub(r'href="([^"]+)"', repl, html)
 
 
+def style_badges(html: str) -> str:
+    """区分バッジ(📘/🔎/📑)で始まる blockquote に色分けクラスを付ける。"""
+    mapping = {"📘": "badge-doc", "🔎": "badge-note", "📑": "badge-legend"}
+
+    def repl(m: re.Match) -> str:
+        ws, emoji = m.group(1), m.group(2)
+        return f'<blockquote class="{mapping[emoji]}">{ws}<p>{emoji}'
+
+    return re.sub(r"<blockquote>(\s*)<p>(📘|🔎|📑)", repl, html)
+
+
 CSS = """
 :root { --fg:#1a1a1a; --muted:#666; --accent:#c0392b; --line:#e3e3e3; --bg:#fff;
   --code:#f6f8fa; --sidebar:#fbfbfc; }
@@ -143,6 +154,9 @@ img { max-width: 100%; height: auto; display: block; margin: 1.2em auto; border:
   padding: 14px; margin: 1.4em 0; text-align: center; overflow-x: auto; }
 blockquote { border-left: 4px solid var(--accent); margin: 1.2em 0; padding: .4em 1.2em;
   background: #fdf3f2; color: #444; border-radius: 0 6px 6px 0; }
+blockquote.badge-doc { border-left-color: #1565c0; background: #eef4fb; color: #21303f; }
+blockquote.badge-note { border-left-color: #b9770e; background: #fdf6e9; color: #3a2e12; }
+blockquote.badge-legend { border-left-color: #607d8b; background: #eef1f3; color: #243; }
 hr { border: none; border-top: 1px solid var(--line); margin: 2.2em 0; }
 footer { max-width: 1180px; margin: 0 auto; padding: 24px; color: var(--muted); font-size: .85rem;
   text-align: center; }
@@ -181,7 +195,7 @@ def render(page: dict, available: set[str]) -> str:
         extensions=["tables", "fenced_code", "toc", "codehilite", "sane_lists"],
         extension_configs={"codehilite": {"guess_lang": False}, "toc": {"toc_depth": "2-3"}},
     )
-    body = rewrite_links(inject_mermaid(md.convert(md_text), mermaid_blocks))
+    body = style_badges(rewrite_links(inject_mermaid(md.convert(md_text), mermaid_blocks)))
     toc = md.toc
     nav = build_nav(page["key"], available)
     mermaid_js = MERMAID_JS if mermaid_blocks else ""

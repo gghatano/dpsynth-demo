@@ -57,6 +57,9 @@ img { max-width: 100%; height: auto; display: block; margin: 1.2em auto; border:
   padding: 14px; margin: 1.4em 0; text-align: center; overflow-x: auto; }
 blockquote { border-left: 4px solid var(--accent); margin: 1.2em 0; padding: .4em 1.2em;
   background: #fdf3f2; color: #444; border-radius: 0 6px 6px 0; }
+blockquote.badge-doc { border-left-color: #1565c0; background: #eef4fb; color: #21303f; }
+blockquote.badge-note { border-left-color: #b9770e; background: #fdf6e9; color: #3a2e12; }
+blockquote.badge-legend { border-left-color: #607d8b; background: #eef1f3; color: #243; }
 hr { border: none; border-top: 1px solid var(--line); margin: 2.2em 0; }
 footer { max-width: 1180px; margin: 0 auto; padding: 24px; color: var(--muted); font-size: .85rem;
   text-align: center; }
@@ -88,7 +91,9 @@ footer { max-width: 1180px; margin: 0 auto; padding: 24px; color: var(--muted); 
 <p>本ページは <a href="index.html">メインレポート</a> の発見を掘り下げる追加実験です。
 <strong>スコープはメインと同じく In-Memory DataFrame API のみ</strong>(Apache Beam 系は対象外)。
 データ・サンプリング・列・評価指標はメインと共通(UCI Adult、20,000 行サンプル、<code>seed=42</code>、δ=1e-5)。</p>
-<blockquote>
+<blockquote class="badge-note">
+<p>🔎 <strong>このページは全体が「考察」</strong>（本デモの実測・分析・推定）。google/dpsynth のドキュメント記載ではありません。
+事実とドキュメント記載の対応はメインレポートの付録Cを参照。</p>
 <p>数値は本実行環境(<a href="https://github.com/gghatano/dpsynth-demo/blob/main/requirements.txt"><code>requirements.txt</code></a> 固定、Python 3.12.3)での結果。
 実験B が示す通り個々の値はシード/環境で揺れるため、<strong>傾向</strong>を読み取ってください。</p>
 </blockquote>

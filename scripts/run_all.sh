@@ -25,6 +25,9 @@ echo "==> 02 品質評価（1-way TVD / 相関誤差 / TSTR）と図生成"
 echo "==> 10 追加実験（numerical_bins / マルチシード / 2-way）"
 "$PY" scripts/10_experiments.py
 
+echo "==> 11 追加実験D（メンバーシップ推論攻撃 MIA）"
+"$PY" scripts/11_mia.py
+
 echo "==> 03 レポート HTML 生成（REPORT.html / EXPERIMENTS.html / _site/）"
 "$PY" scripts/03_build_html.py
 

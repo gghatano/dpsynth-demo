@@ -1,0 +1,79 @@
+{
+  "seed": 42,
+  "sample_n": 20000,
+  "columns": [
+    "age",
+    "hours-per-week",
+    "workclass",
+    "education",
+    "marital-status",
+    "occupation",
+    "race",
+    "gender",
+    "income"
+  ],
+  "cat_cols": [
+    "workclass",
+    "education",
+    "marital-status",
+    "occupation",
+    "race",
+    "gender",
+    "income"
+  ],
+  "num_cols": [
+    "age",
+    "hours-per-week"
+  ],
+  "delta": 1e-05,
+  "runs": [
+    {
+      "tag": "mst_eps1",
+      "epsilon": 1.0,
+      "delta": 1e-05,
+      "rows": 19887,
+      "seconds": 9.84,
+      "file": "synthetic_mst_eps1.csv"
+    },
+    {
+      "tag": "aim_eps1",
+      "epsilon": 1.0,
+      "delta": 1e-05,
+      "rows": 19997,
+      "seconds": 89.89,
+      "file": "synthetic_aim_eps1.csv"
+    },
+    {
+      "tag": "independent_eps1",
+      "epsilon": 1.0,
+      "delta": 1e-05,
+      "rows": 19983,
+      "seconds": 6.11,
+      "file": "synthetic_independent_eps1.csv"
+    },
+    {
+      "tag": "mst_eps0.5",
+      "epsilon": 0.5,
+      "delta": 1e-05,
+      "rows": 20136,
+      "seconds": 9.59,
+      "file": "synthetic_mst_eps0.5.csv"
+    },
+    {
+      "tag": "mst_eps2.0",
+      "epsilon": 2.0,
+      "delta": 1e-05,
+      "rows": 19953,
+      "seconds": 7.41,
+      "file": "synthetic_mst_eps2.0.csv"
+    },
+    {
+      "tag": "mst_eps10.0",
+      "epsilon": 10.0,
+      "delta": 1e-05,
+      "rows": 20021,
+      "seconds": 8.74,
+      "file": "synthetic_mst_eps10.0.csv"
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+diff --git a/dpsynth/discrete_mechanisms/independent.py b/dpsynth/discrete_mechanisms/independent.py
+index 046c411..4165e45 100644
+--- a/dpsynth/discrete_mechanisms/independent.py
++++ b/dpsynth/discrete_mechanisms/independent.py
+@@ -70,7 +70,7 @@ def run_mechanism(
+ 
+   potentials = initial_potentials
+   if potentials is not None:
+-    potentials = potentials.expand([m.clique for m in measurements])
++    potentials = potentials.expand(list(dict.fromkeys(m.clique for m in measurements)))  # demo fix: dedup cliques (upstream bug)
+ 
+   model = mbi.estimation.mirror_descent(
+       data.domain,

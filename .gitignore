@@ -1,0 +1,17 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+
+# ビルド成果物（CI で再生成）
+_site/
+
+# ローカル設定
+.claude/
+
+# 第三者クローン（README の手順で取得・パッチ。patches/ に差分を保存）
+src/
+
+# 大きいデータ・合成 CSV（再取得/再生成可能）
+data/*.csv
+outputs/*.csv

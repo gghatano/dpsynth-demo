@@ -36,15 +36,13 @@ jobs:
       - name: Install build deps
         run: pip install markdown pygments
 
-      - name: Build site (_site/index.html)
-        env:
-          PAGES_NOJEKYLL: "1"
+      - name: Build site (htmls/index.html)
         run: python scripts/03_build_html.py
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: _site
+          path: htmls
 
   deploy:
     needs: build

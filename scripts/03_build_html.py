@@ -3,15 +3,15 @@
 - 表・コードブロック・見出しアンカーに対応
 - figures/*.png を base64 で埋め込み、HTML 単体で共有可能にする
 - 目次(TOC)サイドバー + ヒーロー + ページ切替ナビ
-- 出力:
-    REPORT.html / EXPERIMENTS.html       … リポジトリ直下（GitHub から直接開ける）
-    _site/index.html / _site/experiments.html … GitHub Pages 公開用
+- 出力（htmls/ に集約。直接閲覧と GitHub Pages 公開の両方に使う）:
+    htmls/index.html        … メインレポート（Pages のトップ）
+    htmls/experiments.html  … 追加実験
+    htmls/.nojekyll
 """
 
 from __future__ import annotations
 
 import base64
-import os
 import re
 import shutil
 from pathlib import Path
@@ -19,18 +19,18 @@ from pathlib import Path
 import markdown
 
 ROOT = Path(__file__).resolve().parent.parent
-SITE = ROOT / "_site"
+OUTDIR = ROOT / "htmls"
 
 REPO_URL = "https://github.com/gghatano/dpsynth-demo"
 UPSTREAM_URL = "https://github.com/google/dpsynth"
 
-# (markdown, リポジトリ直下HTML, Pagesファイル名, ヒーロー副題, ナビキー)
+# (markdown, 出力HTMLファイル名(htmls/配下・Pagesの公開名), ヒーロー副題, ナビキー)
 PAGES = [
-    {"md": "REPORT.md", "html": "REPORT.html", "site": "index.html",
+    {"md": "REPORT.md", "out": "index.html",
      "subtitle": "差分プライバシーを満たす合成テーブルデータ生成ライブラリ "
                  f'<a href="{UPSTREAM_URL}">google/dpsynth</a> の解説・利用例・メリデメ・実証デモ',
      "key": "report"},
-    {"md": "EXPERIMENTS.md", "html": "EXPERIMENTS.html", "site": "experiments.html",
+    {"md": "EXPERIMENTS.md", "out": "experiments.html",
      "subtitle": "本体レポートの発見を深掘りする追加実験（numerical_bins・マルチシード頑健性・2-way 忠実度）",
      "key": "experiments"},
 ]
@@ -213,16 +213,15 @@ def render(page: dict, available: set[str]) -> str:
 def main() -> None:
     pages = [p for p in PAGES if (ROOT / p["md"]).exists()]
     available = {p["key"] for p in pages}
-    if SITE.exists():
-        shutil.rmtree(SITE)
-    SITE.mkdir(parents=True)
-    if os.environ.get("PAGES_NOJEKYLL"):
-        (SITE / ".nojekyll").write_text("")
+    if OUTDIR.exists():
+        shutil.rmtree(OUTDIR)
+    OUTDIR.mkdir(parents=True)
+    # GitHub Pages（Jekyll 無効化）。htmls/ をそのまま公開・直接閲覧の両方に使う
+    (OUTDIR / ".nojekyll").write_text("")
     for p in pages:
         html = render(p, available)
-        (ROOT / p["html"]).write_text(html, encoding="utf-8")
-        (SITE / p["site"]).write_text(html, encoding="utf-8")
-        print(f"wrote {p['html']} and _site/{p['site']} ({len(html.encode())/1024:.0f} KB)")
+        (OUTDIR / p["out"]).write_text(html, encoding="utf-8")
+        print(f"wrote {OUTDIR.name}/{p['out']} ({len(html.encode())/1024:.0f} KB)")
 
 
 if __name__ == "__main__":

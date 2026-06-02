@@ -426,14 +426,16 @@ bash scripts/setup_env.sh
 bash scripts/run_all.sh
 ```
 
-実行後、`outputs/`(合成 CSV・`metrics.json`)、`figures/`(評価図)、`REPORT.html` が再生成される。
+実行後、`outputs/`(合成 CSV・`metrics.json`)、`figures/`(評価図)、`htmls/`(レポートHTML) が再生成される。
 個別に動かす場合:
 
 ```bash
 .venv/bin/python scripts/00_prepare_data.py   # Adult データ取得・整形（data/adult.csv）
 .venv/bin/python scripts/01_generate.py       # 合成データ生成（MST/AIM/INDEPENDENT + ε スイープ）
 .venv/bin/python scripts/02_evaluate.py       # 1-way TVD / 相関誤差 / TSTR と図
-.venv/bin/python scripts/03_build_html.py     # REPORT.html / _site/index.html
+.venv/bin/python scripts/10_experiments.py    # 追加実験 A/B/C
+.venv/bin/python scripts/11_mia.py            # 追加実験D（MIA）
+.venv/bin/python scripts/03_build_html.py     # htmls/index.html・experiments.html
 ```
 
 `setup_env.sh` が内部で行う上流対処（再現性のため明記）:

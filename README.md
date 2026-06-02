@@ -22,7 +22,7 @@ bash scripts/setup_env.sh   # uv 導入・dpsynth クローン&パッチ・venv 
 bash scripts/run_all.sh     # データ取得 → DP 合成生成 → 評価 → レポート HTML 生成
 ```
 
-実行後、`outputs/`(合成 CSV・`metrics.json`)、`figures/`(評価図)、`REPORT.html` が再生成されます。
+実行後、`outputs/`(合成 CSV・`metrics.json`)、`figures/`(評価図)、`htmls/`(レポートHTML) が再生成されます。
 所要時間の目安は合計 5〜10 分程度(初回は依存インストール分が加算)。
 
 ### 個別実行
@@ -31,7 +31,7 @@ bash scripts/run_all.sh     # データ取得 → DP 合成生成 → 評価 →
 .venv/bin/python scripts/00_prepare_data.py   # Adult データ取得・整形（data/adult.csv、無ければ自動DL）
 .venv/bin/python scripts/01_generate.py       # 合成データ生成（MST/AIM/INDEPENDENT + ε スイープ）
 .venv/bin/python scripts/02_evaluate.py       # 1-way TVD / 相関誤差 / TSTR と図生成
-.venv/bin/python scripts/03_build_html.py     # REPORT.html / _site/index.html を生成
+.venv/bin/python scripts/03_build_html.py     # htmls/index.html・experiments.html を生成
 ```
 
 ## 構成
@@ -39,17 +39,21 @@ bash scripts/run_all.sh     # データ取得 → DP 合成生成 → 評価 →
 ```
 dpsynth-demo/
 ├── README.md                  … 本ファイル（再現手順）
-├── REPORT.md / .html          … 解説・利用例・メリデメ・デモ結果レポート（本体）
-├── EXPERIMENTS.md / .html     … 追加実験（numerical_bins・マルチシード・2-way）
+├── REPORT.md                  … 解説・利用例・メリデメ・デモ結果レポート（本体, Markdown）
+├── EXPERIMENTS.md             … 追加実験（numerical_bins・マルチシード・2-way・MIA）
+├── htmls/                      … ビルド済み HTML（Pages 公開元・直接閲覧用）
+│   ├── index.html             …   レポート（Pages のトップ）
+│   └── experiments.html       …   追加実験
 ├── requirements.txt           … 全依存をバージョン固定したロックファイル（再現性の要）
 ├── scripts/
 │   ├── setup_env.sh           … 環境構築（uv・dpsynth クローン&パッチ・venv・固定依存）一括
-│   ├── run_all.sh             … 00→02→10→03 を一括実行
+│   ├── run_all.sh             … 00→02→10→11→03 を一括実行
 │   ├── 00_prepare_data.py     … Adult データ取得・ヘッダー付与・整形
 │   ├── 01_generate.py         … DP 合成データ生成（MST/AIM/INDEPENDENT + ε スイープ）
 │   ├── 02_evaluate.py         … 1-way TVD / 相関誤差 / TSTR で品質評価し図を出力
 │   ├── 10_experiments.py      … 追加実験 A/B/C を実行し図を出力
-│   ├── 03_build_html.py       … REPORT/EXPERIMENTS → 自己完結 HTML / Pages 用 _site を生成
+│   ├── 11_mia.py              … 追加実験D（メンバーシップ推論攻撃 MIA）
+│   ├── 03_build_html.py       … REPORT/EXPERIMENTS → htmls/ に自己完結HTMLを生成（Pages公開元）
 │   └── create_issues.sh       … docs/BACKLOG.md を GitHub Issue に一括登録（要 gh 認証）
 ├── patches/                   … dpsynth への最小修正パッチ（INDEPENDENT 機構の重複クリーク対策）
 ├── docs/BACKLOG.md            … 今後の課題（Issue 化候補）
@@ -87,7 +91,7 @@ DPSynth は `pipeline-dp` → `python-dp`(Google C++ 差分プライバシーラ
 DP 合成データの再生成は不要で、`markdown` だけで数十秒でビルドされます。
 
 - ワークフロー: [`.github/workflows/deploy-pages.yml`](.github/workflows/deploy-pages.yml)
-- 公開物: `scripts/03_build_html.py` が生成する `_site/index.html`（目次サイドバー + 図埋め込み）
+- 公開物: `scripts/03_build_html.py` が生成する `htmls/`（`index.html` + `experiments.html`、目次サイドバー + 図埋め込み）
 
 ### 有効化手順（初回のみ）
 
@@ -95,7 +99,7 @@ DP 合成データの再生成は不要で、`markdown` だけで数十秒でビ
 2. `main` ブランチに push（または Actions タブから **Deploy report to GitHub Pages** を手動実行）。
 3. 完了後、`https://gghatano.github.io/dpsynth-demo/` で公開されます。
 
-ローカル確認: `python -m http.server 8099 --directory _site` → http://localhost:8099/
+ローカル確認: `python -m http.server 8099 --directory htmls` → http://localhost:8099/
 公開ページは **レポート(index)** と **追加実験(experiments)** の2ページ構成（上部タブで切替）。
 
 ## 今後の課題（Issue 一括作成）

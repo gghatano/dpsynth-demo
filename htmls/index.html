@@ -98,6 +98,7 @@ footer { max-width: 1180px; margin: 0 auto; padding: 24px; color: var(--muted); 
 <li><a href="#22-in-memory-5">2.2 処理ライフサイクル(In-Memory の 5 段階)</a></li>
 <li><a href="#23">2.3 対応アルゴリズム</a></li>
 <li><a href="#24">2.4 属性型(スキーマ定義)</a></li>
+<li><a href="#25">2.5 対象データの形式と「保存される特徴」</a></li>
 </ul>
 </li>
 <li><a href="#3-api">3. 使い方(API)</a><ul>
@@ -134,8 +135,8 @@ footer { max-width: 1180px; margin: 0 auto; padding: 24px; color: var(--muted); 
 作成日: 2026-06-02 ／ 実行環境: WSL2 (Ubuntu 24.04) + Python 3.12 + uv</p>
 <blockquote>
 <p><strong>⚠️ 本デモ・実験のスコープ</strong>
-本レポートのデモ・実験は <strong>In-Memory DataFrame API(<code>dpsynth.generate</code>、単一マシン・Pandas)のみ</strong>を対象としています。
-<strong>Apache Beam を用いた Scalable Pipeline API(分散処理)は対象外</strong>です(ライブラリの機能としては §2.1・§3.3 で紹介しますが、実行・評価は行っていません)。</p>
+- <strong>対象データ形式</strong>: <strong>1 行 = 1 人の単表マスターデータ</strong>(本デモの Adult がこれ)。dpsynth は「単一フラット表 + 各行が独立したプライバシー単位」を前提とする。<strong>列間の相関は保つ</strong>が、<strong>トランザクション(1人=多数行・時系列)や複数テーブル(マスター–トランザクション)は前提が異なり対象外</strong>(詳細は §2.5)。
+- <strong>実行範囲</strong>: <strong>In-Memory DataFrame API(<code>dpsynth.generate</code>)のみ</strong>。<strong>Apache Beam の Scalable Pipeline API(分散処理)は対象外</strong>(§2.1・§3.3 で機能紹介のみ。実行・評価はせず)。</p>
 </blockquote>
 <hr />
 <blockquote class="badge-legend">
@@ -347,6 +348,47 @@ flowchart LR
 </tr>
 </tbody>
 </table>
+<h3 id="25">2.5 対象データの形式と「保存される特徴」</h3>
+<blockquote class="badge-note">
+<p>🔎 <strong>考察を含む</strong>（前提は出典付きの事実、各データ形式への当てはめは筆者の評価)。</p>
+</blockquote>
+<p>dpsynth の前提は <strong>「単一フラット表(single-table schema)+ 各行が独立したプライバシー単位」</strong> <a href="#ref1">[1]</a><a href="#ref6">[6]</a>。
+列はスカラーのみで、<strong>繰り返し/ネスト列や union は非対応</strong>(解析時に無視される)<a href="#ref6">[6]</a>。
+<strong>「各レコードは異なるプライバシー単位から来る」ことを仮定</strong>する <a href="#ref6">[6]</a>。
+この前提を実データの形式に当てはめると(🔎 考察):</p>
+<table>
+<thead>
+<tr>
+<th>対象データ</th>
+<th>可否</th>
+<th>保存される / されない構造</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>単表マスター</strong>(1行=1エンティティ。顧客・商品マスタ)</td>
+<td>✅ <strong>本命</strong>(本デモの Adult がこれ)</td>
+<td>列の<strong>同時分布(相関)・型</strong>を保つ</td>
+</tr>
+<tr>
+<td><strong>単表トランザクション</strong>(1行=1イベント)</td>
+<td>⚠️ <strong>限定的</strong></td>
+<td>各行の<strong>属性分布は保てる</strong>が、<strong>時間順・エンティティ別の系列・エンティティあたり件数(カーディナリティ)は保たない</strong>。さらに「<strong>1人=多数行</strong>」だと<strong>行レベル DP の前提が崩れ</strong>、保証の単位が実質「トランザクション」になり<strong>個人単位のプライバシーが弱くなる</strong>(寄与上限/グループ DP が別途必要)</td>
+</tr>
+<tr>
+<td><strong>マスター–トランザクション</strong>(複数テーブル・FK)</td>
+<td>❌ <strong>非対応</strong></td>
+<td>FK・参照整合性・親子カーディナリティ・表間相関は扱えない(→ リレーショナル合成器の領域)</td>
+</tr>
+<tr>
+<td>時系列 / グラフ</td>
+<td>❌ 範囲外</td>
+<td>順序・自己相関・ネットワーク構造は対象外</td>
+</tr>
+</tbody>
+</table>
+<p><strong>要点</strong>: dpsynth は「<strong>1 行 = 1 人の単表の、列間相関を保つ</strong>」手法。トランザクションや複数テーブルは
+「入る/入らない」以前に<strong>保たれる構造が違う</strong>ため、用途が変わる。自分のデータが上のどれかを最初に見極めるとよい。</p>
 <hr />
 <h2 id="3-api">3. 使い方(API)</h2>
 <h3 id="31-in-memory-api-dpsynthgenerate">3.1 In-Memory API: <code>dpsynth.generate</code></h3>

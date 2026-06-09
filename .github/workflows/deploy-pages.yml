@@ -9,6 +9,10 @@ on:
     paths:
       - "REPORT.md"
       - "EXPERIMENTS.md"
+      - "setup.md"
+      - "usage.md"
+      - "reproduce.md"
+      - "engineering-notes.md"
       - "figures/**"
       - "scripts/03_build_html.py"
       - ".github/workflows/deploy-pages.yml"

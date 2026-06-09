@@ -50,7 +50,7 @@ bash scripts/run_all.sh
 | 乱数シード | `seed=42`（合成元サンプリング・生成。主表） |
 | 合成元サンプル | UCI Adult Income 48,842 行から 20,000 行を抽出 |
 | 対象列(9 列) | 数値 `age`, `hours-per-week` ／ カテゴリ `workclass, education, marital-status, occupation, race, gender, income` |
-| プライバシー予算 | 機構比較 `ε=1.0`、MST スイープ `ε=0.5/1.0/2.0/10.0`、`δ=1e-5` |
+| プライバシー予算 | 機構比較 `ε=1.0`、MST で ε を変えた比較 `ε=0.5/1.0/2.0/10.0`、`δ=1e-5` |
 | 数値ビン数 | `numerical_bins=16` |
 
 ### 入力・出力ファイルの場所

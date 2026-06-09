@@ -88,7 +88,7 @@ footer { max-width: 1180px; margin: 0 auto; padding: 24px; color: var(--muted); 
 <li><a href="#1">1. アブストラクト</a></li>
 <li><a href="#2">2. イントロダクション</a></li>
 <li><a href="#3">3. 関連技術・対象ライブラリの概要</a><ul>
-<li><a href="#31-dpsynth">3.1 DPSynth の目的</a></li>
+<li><a href="#31-dpsynth">3.1 DPSynth の概要</a></li>
 <li><a href="#32-2">3.2 2 つの実行モデルと本レポートの対象</a></li>
 <li><a href="#33">3.3 対応アルゴリズム（生成機構）</a></li>
 <li><a href="#34">3.4 ライブラリとしての位置づけ</a></li>
@@ -104,7 +104,7 @@ footer { max-width: 1180px; margin: 0 auto; padding: 24px; color: var(--muted); 
 </ul>
 </li>
 <li><a href="#5">5. 実験結果</a><ul>
-<li><a href="#51">5.1 機構比較とプライバシー予算スイープ</a></li>
+<li><a href="#51">5.1 機構比較とプライバシー予算 ε の影響</a></li>
 <li><a href="#52">5.2 列ごとの分布再現性</a></li>
 <li><a href="#53">5.3 下流タスク性能</a></li>
 <li><a href="#54-mia">5.4 経験的プライバシー（MIA）</a></li>
@@ -133,7 +133,7 @@ footer { max-width: 1180px; margin: 0 auto; padding: 24px; color: var(--muted); 
 </ul>
 </div>
 </nav>
-  <article><h1 id="dpsynth">DPSynth を用いた差分プライバシー付き合成テーブルデータ生成の実証評価</h1>
+  <article><h1 id="dpsynth">DPSynth を対象とした差分プライバシー付き合成テーブルデータ生成の実証評価</h1>
 <p>対象ライブラリ: <strong><a href="https://github.com/google/dpsynth">google/dpsynth</a></strong> — <em>Differentially Private Synthetic Tabular Data Generation</em>
 作成日: 2026-06-02 ／ 実験環境: WSL2 (Ubuntu 24.04) + Python 3.12 + uv（環境構築の詳細は <a href="setup.html">環境構築ノート</a> を参照）</p>
 <blockquote class="badge-legend">
@@ -151,7 +151,7 @@ footer { max-width: 1180px; margin: 0 auto; padding: 24px; color: var(--muted); 
 <p>医療・金融・人事などの分野では、機微な属性を含むテーブルデータを分析・共有・検証に利用したいという実務上の要請が広く存在する。一方で、こうしたデータの共有は個人のプライバシーリスクを伴うため、しばしば困難である。</p>
 <p>従来の匿名化・マスキング（特定列の削除や一般化、<code>k</code>-匿名化など）は、外部データとの<strong>リンケージ攻撃</strong>（複数のデータセットを突き合わせて個人を再識別する攻撃）に対して脆弱な場合があることが知られている <a href="#ref2">[2]</a>。すなわち、単独のデータセットを加工するだけでは、外部情報との照合による再識別リスクを十分に扱えないことがある。</p>
 <p><strong>差分プライバシー（Differential Privacy, DP）</strong> は、ある 1 個人のレコードを加えても除いても、アルゴリズムの出力分布がほとんど変化しないことを数学的に保証する枠組みである。この保証の強さはプライバシー予算 <code>(ε, δ)</code> で制御される。<strong>合成データ（synthetic data）</strong> とは、元データそのものではなく、元データの統計的性質を模した人工的に生成されたデータを指す。<strong>差分プライバシー付き合成データ生成</strong>は、DP を満たしつつ元データの分布・相関を保った合成データを生成することで、上記の課題に対する一つの選択肢を与える。生成された合成データは特定個人の復元が困難であるため、比較的自由に共有・分析できる可能性がある。</p>
-<p>本レポートでは、Google が公開している OSS である <strong>DPSynth</strong> を対象に、実データに近い公開データ（UCI Adult Income）を用いて、その実用性・有用性・制約を実験的に評価する。本レポートの貢献は以下の三点に整理される。</p>
+<p>本レポートでは、Google が公開している OSS である <strong>DPSynth</strong> を評価対象とする。DPSynth は公開されて間もないライブラリであり、第三者による実証的な評価例がまだ少ない。そこで、実データに近い公開データ（UCI Adult Income）を用いて、その有用性・経験的プライバシー・実装上の制約を早期に検証することを試みる。本レポートの貢献は以下の三点に整理される。</p>
 <ol>
 <li>DPSynth の前提（対象データ形式・プライバシー単位）と処理構造を、ドキュメント・ソースコードに基づき整理した（第3章）。</li>
 <li>UCI Adult Income データを用いて実験を行い、複数の生成機構（MST・AIM・INDEPENDENT）を、分布再現性・下流タスク性能・経験的プライバシーの観点から比較した（第4〜5章）。</li>
@@ -159,8 +159,8 @@ footer { max-width: 1180px; margin: 0 auto; padding: 24px; color: var(--muted); 
 </ol>
 <hr />
 <h2 id="3">3. 関連技術・対象ライブラリの概要</h2>
-<h3 id="31-dpsynth">3.1 DPSynth の目的</h3>
-<p>DPSynth は、機微なテーブルデータから、差分プライバシー <code>(ε, δ)</code> を保証しつつ、元データの統計的性質（分布・列間相関）を保った合成データを生成することを目的とする OSS ライブラリである <a href="#ref1">[1]</a><a href="#ref2">[2]</a>。中核となるのは、<strong>周辺分布（マージナル, marginal）</strong> ——一部の列だけに注目した分布、たとえば 1 列の分布（1-way）や 2 列の同時分布（2-way）——を DP 付きで測定し、それらと整合する同時分布をグラフィカルモデルで推定してサンプリングするという手法である <a href="#ref5">[5]</a><a href="#ref10">[10]</a>。個々のレコードを記憶するのではなく、ノイズを加えた集計統計量のみからモデルを構築するため、DP が成立する。</p>
+<h3 id="31-dpsynth">3.1 DPSynth の概要</h3>
+<p>DPSynth は、機微なテーブルデータから、差分プライバシー <code>(ε, δ)</code> を保証しつつ、元データの統計的性質（分布・列間相関）を保った合成データを生成する OSS ライブラリである <a href="#ref1">[1]</a><a href="#ref2">[2]</a>。中核となるのは、<strong>周辺分布（マージナル, marginal）</strong> ——一部の列だけに注目した分布、たとえば 1 列の分布（1-way）や 2 列の同時分布（2-way）——を DP 付きで測定し、それらと整合する同時分布を<strong>グラフィカルモデル</strong>（変数間の依存関係を表す確率モデル）で推定してサンプリングするという手法である <a href="#ref5">[5]</a><a href="#ref10">[10]</a>。個々のレコードを記憶するのではなく、ノイズを加えた集計統計量のみからモデルを構築するため、DP が成立する。</p>
 <h3 id="32-2">3.2 2 つの実行モデルと本レポートの対象</h3>
 <p>DPSynth は規模に応じて 2 つの実行系を提供する <a href="#ref2">[2]</a>。</p>
 <table>
@@ -213,12 +213,12 @@ footer { max-width: 1180px; margin: 0 auto; padding: 24px; color: var(--muted); 
 <tbody>
 <tr>
 <td><strong>AIM</strong> (Adaptive Iterative Mechanism)</td>
-<td>ワークロード・予算・データ特性に基づき、低次元のマージナルを<strong>適応的に選択・測定</strong>する MWEM 系手法 <a href="#ref8">[8]</a></td>
+<td>ワークロード（再現を重視するマージナルの集合）・予算・データ特性に基づき、低次元のマージナルを<strong>適応的に選択・測定</strong>する反復型の手法 <a href="#ref8">[8]</a></td>
 <td>下流タスクに効く相関を優先的に捉えやすい。計算コストは相対的に高い</td>
 </tr>
 <tr>
 <td><strong>MST</strong> (Maximum Spanning Tree)</td>
-<td>指数機構で<strong>ペア相関の最大全域木</strong>を選び、2 変量依存を DP でモデル化する <a href="#ref9">[9]</a></td>
+<td>DP の指数機構（候補からスコアに応じて確率的に選ぶ仕組み）で<strong>ペア相関の最大全域木</strong>を選び、2 変量依存を DP でモデル化する <a href="#ref9">[9]</a></td>
 <td>高速。多くの場合に妥当なベースラインとなる</td>
 </tr>
 <tr>
@@ -233,7 +233,7 @@ footer { max-width: 1180px; margin: 0 auto; padding: 24px; color: var(--muted); 
 </tr>
 </tbody>
 </table>
-<p>いずれの機構も、推定エンジンとして <strong>Private-PGM</strong>（<a href="https://github.com/ryan112358/mbi"><code>mbi</code></a>、マルコフ確率場をミラー降下で推定する手法）を共有する <a href="#ref10">[10]</a>。すなわち各機構の違いは「<strong>どのマージナルを、どの予算配分で測定するか</strong>」という戦略の違いとして整理できる。</p>
+<p>いずれの機構も、推定エンジンとして <strong>Private-PGM</strong>（<a href="https://github.com/ryan112358/mbi"><code>mbi</code></a>、測定済みのマージナルと整合する同時分布をグラフィカルモデルとして推定する手法）を共有する <a href="#ref10">[10]</a>。すなわち各機構の違いは「<strong>どのマージナルを、どの予算配分で測定するか</strong>」という戦略の違いとして整理できる。</p>
 <h3 id="34">3.4 ライブラリとしての位置づけ</h3>
 <blockquote class="badge-note">
 <p>🔎 <strong>考察</strong>（DPSynth には論文が無く、README も公式サポート対象外と明記している。以下はコードとドキュメント構造からの整理であり、推定を含む）。</p>
@@ -244,7 +244,7 @@ flowchart LR
     AIMp["AIM<br/>arXiv:2201.12677"] --> DPS
     MSTp["MST<br/>arXiv:2108.04978"] --> DPS
     MBI["Private-PGM / mbi<br/>マルコフ確率場推定"] --> DPS
-    ACC["dp_accounting<br/>zCDP/ガウス機構の予算会計"] --> DPS
+    ACC["dp_accounting<br/>プライバシー予算の会計"] --> DPS
     PDP["pipeline_dp<br/>ローカル/分散のDP集計基盤"] --> DPS
     DPS{{DPSynth<br/>統合フレームワーク}} --> OUT([DP 合成テーブルデータ])
 </div>
@@ -269,7 +269,7 @@ flowchart LR
 <h3 id="43">4.3 評価した生成機構と主要パラメータ</h3>
 <ul>
 <li><strong>生成機構</strong>: MST・AIM・INDEPENDENT の 3 種を、共通条件 <code>ε=1.0, δ=1e-5</code> で比較した。</li>
-<li><strong>プライバシー予算スイープ（MST）</strong>: <code>ε = 0.5 / 1.0 / 2.0 / 10.0</code>（<code>δ=1e-5</code> 固定）。</li>
+<li><strong>プライバシー予算 ε を変えた比較（MST）</strong>: 機構を MST に固定し、ε のみを <code>0.5 / 1.0 / 2.0 / 10.0</code> の 4 水準に変えて生成する（<code>δ=1e-5</code> 固定）。ε とプライバシー・有用性の関係を見るための条件である。</li>
 <li><strong>数値列のビン数</strong>: <code>numerical_bins=16</code>（数値列は等頻度の分位ビンに離散化される）。ビン数の感度は別途 <a href="experiments.html">追加実験</a> で扱う。</li>
 <li><strong>乱数シード・試行回数</strong>: 第5章の主表は単一シード（<code>seed=42</code>）での代表的な 1 実行である。シードを変えたときのばらつきは別途 <a href="experiments.html">追加実験</a>（実験B）で複数シードの平均±標準偏差として定量化している。</li>
 </ul>
@@ -293,8 +293,8 @@ flowchart LR
 <blockquote class="badge-note">
 <p>🔎 本章の数値は本実験の一次情報（<code>outputs/metrics.json</code>・<code>experiments/</code> 由来）であり、ドキュメント記載ではない。結果の解釈は第6章に分離する。</p>
 </blockquote>
-<h3 id="51">5.1 機構比較とプライバシー予算スイープ</h3>
-<p>下表は、機構比較（<code>ε=1.0</code>）と MST のプライバシー予算スイープの結果をまとめたものである。各列は左から、平均 1-way TVD（小さいほど分布が一致）、相関誤差（小さいほど数値相関を保持）、TSTR の AUC・正解率・F1（大きいほど下流タスクに有用）、生成時間である。最下行の TRTR は実データ学習による上限の参照点を示す。</p>
+<h3 id="51">5.1 機構比較とプライバシー予算 ε の影響</h3>
+<p>下表は、機構比較（<code>ε=1.0</code>）と、MST について ε を 4 水準に変えた比較の結果をまとめたものである。各列は左から、平均 1-way TVD（小さいほど分布が一致）、相関誤差（小さいほど数値相関を保持）、TSTR の AUC・正解率・F1（大きいほど下流タスクに有用）、生成時間である。最下行の TRTR は実データ学習による上限の参照点を示す。</p>
 <table>
 <thead>
 <tr>
@@ -475,7 +475,7 @@ flowchart LR
 <h3 id="71">7.1 研究上の残課題</h3>
 <ul>
 <li><strong>複数データセットでの評価</strong>: 本実験は単一データセットに限られる。分布特性の異なる複数データでの再評価が必要である。</li>
-<li><strong>ε・ビン数に対する感度分析</strong>: プライバシー予算と数値ビン数の体系的なスイープにより、トレードオフをより精緻に特徴づける。</li>
+<li><strong>ε・ビン数に対する感度分析</strong>: プライバシー予算と数値ビン数を複数水準に変えた体系的な比較により、トレードオフをより精緻に特徴づける。</li>
 <li><strong>実業務データに近いデータでの評価</strong>: 公開データではなく、実務に近い分布・カーディナリティを持つデータでの検証。</li>
 <li><strong>MIA 以外の攻撃評価</strong>: シャドウモデル型 MIA や属性推論攻撃など、より強い・多様な攻撃による安全性評価。</li>
 <li><strong>単表以外の形式への適用可能性</strong>: 複数テーブル・時系列データへ DP 合成を拡張する際の前提と限界の整理。</li>

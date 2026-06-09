@@ -37,8 +37,11 @@ fi
 sed -i '/"tensorflow",/d' src/pyproject.toml
 
 # 4. サブパッケージに __init__.py を補完（無いと import 不能）
+#    上流の構成変化で一部ディレクトリが存在しないことがあるため、存在するものだけ補完する。
 for d in pipeline_transformations dataset_descriptors eval local_mode bin; do
-  touch "src/dpsynth/$d/__init__.py"
+  if [ -d "src/dpsynth/$d" ]; then
+    touch "src/dpsynth/$d/__init__.py"
+  fi
 done
 
 # 5. INDEPENDENT 機構の重複クリーク修正（未適用のときだけ当てる：冪等）

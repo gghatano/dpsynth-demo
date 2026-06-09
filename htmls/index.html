@@ -136,13 +136,6 @@ footer { max-width: 1180px; margin: 0 auto; padding: 24px; color: var(--muted); 
   <article><h1 id="dpsynth">DPSynth を対象とした差分プライバシー付き合成テーブルデータ生成の実証評価</h1>
 <p>対象ライブラリ: <strong><a href="https://github.com/google/dpsynth">google/dpsynth</a></strong> — <em>Differentially Private Synthetic Tabular Data Generation</em>
 作成日: 2026-06-02 ／ 実験環境: WSL2 (Ubuntu 24.04) + Python 3.12 + uv（環境構築の詳細は <a href="setup.html">環境構築ノート</a> を参照）</p>
-<blockquote class="badge-legend">
-<p>📑 <strong>凡例: 事実と考察の区別</strong>
-本レポートでは、出典に基づく事実と筆者の分析・推定を区別して記述する。
-- 出典タグ <strong>[n]</strong>（例 <a href="#ref3">[3]</a>）… google/dpsynth のドキュメント・論文・ソースコードに基づく<strong>事実</strong>。クリックで第10章「参考文献」の該当出典へ移動する。
-- 🔎 <strong>考察</strong> … 出典タグの<strong>無い</strong>記述で、本実験で得た<strong>実測・分析・推定</strong>(一次情報)。章・節が丸ごと考察に当たる場合は見出し直下に 🔎 を付す。</p>
-<p>なお、本レポートはエンジニアリング上の手順（環境構築・API 利用・再現コマンド・実装上の不具合対応）を本文から分離し、別ページに収めている。該当箇所では都度リンクを示す。</p>
-</blockquote>
 <hr />
 <h2 id="1">1. アブストラクト</h2>
 <p>本レポートは、差分プライバシー（DP）付き合成テーブルデータ生成ライブラリ <strong>DPSynth</strong> を対象とした実証評価である。公開データ <strong>UCI Adult Income</strong> を用い、In-Memory API で 3 機構（MST・AIM・INDEPENDENT）を分布再現性・下流タスク性能・経験的プライバシーの観点から比較した。本実験条件では、列間依存を扱う MST／AIM が相関を一定程度保持し、独立仮定の INDEPENDENT より下流タスク性能が高かった。一方、数値列の離散化による再現性低下、単表前提による適用範囲の制約、実装成熟度の課題も確認された。結果は単一データセット・特定バージョンに基づき、一般化には追加検証を要する。</p>

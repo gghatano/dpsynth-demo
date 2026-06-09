@@ -43,6 +43,21 @@ COLS = NUM_COLS + CAT_COLS
 
 
 # ---------- 共通 ----------
+def _clear_jit_caches() -> None:
+    """JAX の JIT コンパイルキャッシュと Python のガベージを解放する。
+
+    多数のシードで generate を繰り返すと、コンパイル成果物がプロセス内に蓄積し、
+    XLA の CPU 実行可能メモリ確保が失敗することがあるため、世代ごとに呼ぶ。
+    """
+    import gc
+    try:
+        import jax
+        jax.clear_caches()
+    except Exception:
+        pass
+    gc.collect()
+
+
 def load_real() -> pd.DataFrame:
     df = pd.read_csv(DATA)[COLS].copy()
     return df.sample(n=min(SAMPLE_N, len(df)), random_state=SEED).reset_index(drop=True)
@@ -138,10 +153,10 @@ def exp_a(real, domains):
 def exp_b(real, domains, train, test, categories):
     print("\n== 実験B: マルチシード頑健性 (eps=1.0) ==")
     plans = [
-        ("MST", lambda s: dm.MSTConfig(seed=s), [0, 1, 2, 3, 4]),
-        ("INDEPENDENT", lambda s: dm.IndependentConfig(seed=s), [0, 1, 2, 3, 4]),
+        ("MST", lambda s: dm.MSTConfig(seed=s), list(range(10))),
+        ("INDEPENDENT", lambda s: dm.IndependentConfig(seed=s), list(range(10))),
         ("AIM", lambda s: dm.AIMConfig(seed=s, max_rounds=16, pgm_iters=1000,
-                                       max_model_size=100), [0, 1, 2]),
+                                       max_model_size=100), list(range(5))),
     ]
     summary = {}
     for name, cfg, seeds in plans:
@@ -151,6 +166,10 @@ def exp_b(real, domains, train, test, categories):
                                    discrete_config=cfg(s), numerical_bins=16)
             tvds.append(mean_tvd(train, syn))
             aucs.append(tstr_auc(syn, test, categories))
+            # シード数を増やすと、各 generate の JAX/XLA JIT コンパイル成果物が
+            # プロセス内に蓄積し、CPU 実行可能メモリプールを枯渇させる
+            # （"Unable to allocate section memory"）。世代ごとにキャッシュを解放する。
+            _clear_jit_caches()
         summary[name] = {"n": len(seeds), "seeds": seeds,
                          "tvd_mean": float(np.mean(tvds)), "tvd_std": float(np.std(tvds)),
                          "auc_mean": float(np.nanmean(aucs)), "auc_std": float(np.nanstd(aucs)),

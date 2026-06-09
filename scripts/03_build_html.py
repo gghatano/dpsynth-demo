@@ -28,11 +28,23 @@ UPSTREAM_URL = "https://github.com/google/dpsynth"
 PAGES = [
     {"md": "REPORT.md", "out": "index.html",
      "subtitle": "差分プライバシーを満たす合成テーブルデータ生成ライブラリ "
-                 f'<a href="{UPSTREAM_URL}">google/dpsynth</a> の解説・利用例・メリデメ・実証デモ',
+                 f'<a href="{UPSTREAM_URL}">google/dpsynth</a> を題材にした実証評価レポート',
      "key": "report"},
     {"md": "EXPERIMENTS.md", "out": "experiments.html",
-     "subtitle": "本体レポートの発見を深掘りする追加実験（numerical_bins・マルチシード頑健性・2-way 忠実度）",
+     "subtitle": "本体レポートの発見を深掘りする追加実験（numerical_bins・マルチシード頑健性・2-way 忠実度・MIA）",
      "key": "experiments"},
+    {"md": "setup.md", "out": "setup.html",
+     "subtitle": "実験を再現するための環境構築と依存関係のノート",
+     "key": "setup"},
+    {"md": "usage.md", "out": "usage.html",
+     "subtitle": "DPSynth の In-Memory API・CLI の利用方法と処理ライフサイクル",
+     "key": "usage"},
+    {"md": "reproduce.md", "out": "reproduce.html",
+     "subtitle": "レポート本体の実験結果を再現するための手順",
+     "key": "reproduce"},
+    {"md": "engineering-notes.md", "out": "engineering-notes.html",
+     "subtitle": "実行時に遭遇した実装・運用上の問題と対応の記録",
+     "key": "engineering"},
 ]
 
 
@@ -80,10 +92,15 @@ def rewrite_links(html: str) -> str:
     html = html.replace('href="REPORT.md"', 'href="index.html"')
     html = html.replace('href="EXPERIMENTS.md"', 'href="experiments.html"')
 
+    # 同一サイトに存在する HTML ページ（リンク書き換えの対象外）
+    local_pages = ("index.html", "experiments.html", "setup.html",
+                   "usage.html", "reproduce.html", "engineering-notes.html")
+
     def repl(m: re.Match) -> str:
         href = m.group(1)
-        if href.startswith(("http://", "https://", "#", "mailto:", "data:",
-                            "index.html", "experiments.html")):
+        if href.startswith(("http://", "https://", "#", "mailto:", "data:")):
+            return m.group(0)
+        if href.split("#", 1)[0] in local_pages:
             return m.group(0)
         return f'href="{REPO_URL}/blob/main/{href}"'
 
@@ -177,7 +194,11 @@ footer { max-width: 1180px; margin: 0 auto; padding: 24px; color: var(--muted); 
 
 def build_nav(active_key: str, available: set[str]) -> str:
     items = [("report", "index.html", "📄 レポート"),
-             ("experiments", "experiments.html", "🧪 追加実験")]
+             ("experiments", "experiments.html", "🧪 追加実験"),
+             ("setup", "setup.html", "🛠 環境構築"),
+             ("usage", "usage.html", "🔌 API・CLI"),
+             ("reproduce", "reproduce.html", "🔁 再現手順"),
+             ("engineering", "engineering-notes.html", "🐞 実装ノート")]
     links = []
     for key, href, label in items:
         if key not in available:

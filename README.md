@@ -6,7 +6,13 @@
 > **⚠️ スコープ**: 本デモ・実験は **In-Memory DataFrame API(`dpsynth.generate`、単一マシン・Pandas)のみ**を対象とします。
 > **Apache Beam を用いた Scalable Pipeline API(分散処理)は対象外**です(機能紹介はしますが実行・評価はしていません)。
 
-- 解説・利用例・メリデメ・デモ結果の本体 → **[REPORT.md](REPORT.md)** / 公開サイト **https://gghatano.github.io/dpsynth-demo/**
+- 実証評価レポート本体（論文調・10 章構成）→ **[REPORT.md](REPORT.md)** / 公開サイト **https://gghatano.github.io/dpsynth-demo/**
+- エンジニアリング情報は本体から分離し、別ページに集約:
+  - 環境構築・依存関係 → **[setup.md](setup.md)**
+  - API・CLI 利用方法 → **[usage.md](usage.md)**
+  - 実験再現手順 → **[reproduce.md](reproduce.md)**
+  - 実装上の問題と対応 → **[engineering-notes.md](engineering-notes.md)**
+  - 追加実験 → **[EXPERIMENTS.md](EXPERIMENTS.md)**
 
 ## クイックスタート（clone してコマンド実行で再現）
 
@@ -39,11 +45,17 @@ bash scripts/run_all.sh     # データ取得 → DP 合成生成 → 評価 →
 ```
 dpsynth-demo/
 ├── README.md                  … 本ファイル（再現手順）
-├── REPORT.md                  … 解説・利用例・メリデメ・デモ結果レポート（本体, Markdown）
+├── REPORT.md                  … 実証評価レポート本体（論文調・10 章構成, Markdown）
 ├── EXPERIMENTS.md             … 追加実験（numerical_bins・マルチシード・2-way・MIA）
+├── setup.md                   … 環境構築と依存関係（本体から分離）
+├── usage.md                   … API・CLI 利用方法・処理ライフサイクル（本体から分離）
+├── reproduce.md               … 実験再現手順（本体から分離）
+├── engineering-notes.md       … 実装時の問題と対応（本体から分離）
 ├── htmls/                      … ビルド済み HTML（Pages 公開元・直接閲覧用）
-│   ├── index.html             …   レポート（Pages のトップ）
-│   └── experiments.html       …   追加実験
+│   ├── index.html             …   レポート本体（Pages のトップ）
+│   ├── experiments.html       …   追加実験
+│   ├── setup.html / usage.html / reproduce.html / engineering-notes.html
+│   │                          …   分離したエンジニアリング各ページ
 ├── requirements.txt           … 全依存をバージョン固定したロックファイル（再現性の要）
 ├── scripts/
 │   ├── setup_env.sh           … 環境構築（uv・dpsynth クローン&パッチ・venv・固定依存）一括

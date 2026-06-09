@@ -80,8 +80,8 @@ footer { max-width: 1180px; margin: 0 auto; padding: 24px; color: var(--muted); 
 <body>
 <header class="hero"><div class="inner">
   <h1>DPSynth 解説・実証デモ</h1>
-  <p>本体レポートの発見を深掘りする追加実験（numerical_bins・マルチシード頑健性・2-way 忠実度）</p>
-</div><nav class="nav"><a href="index.html">📄 レポート</a><a href="experiments.html" class="active">🧪 追加実験</a></nav></header>
+  <p>本体レポートの発見を深掘りする追加実験（numerical_bins・マルチシード頑健性・2-way 忠実度・MIA）</p>
+</div><nav class="nav"><a href="index.html">📄 レポート</a><a href="experiments.html" class="active">🧪 追加実験</a><a href="setup.html">🛠 環境構築</a><a href="usage.html">🔌 API・CLI</a><a href="reproduce.html">🔁 再現手順</a><a href="engineering-notes.html">🐞 実装ノート</a></nav></header>
 <div class="layout">
   <nav class="toc"><strong>目次</strong><div class="toc">
 <ul>
@@ -100,7 +100,7 @@ footer { max-width: 1180px; margin: 0 auto; padding: 24px; color: var(--muted); 
 データ・サンプリング・列・評価指標はメインと共通(UCI Adult、20,000 行サンプル、<code>seed=42</code>、δ=1e-5)。</p>
 <blockquote class="badge-note">
 <p>🔎 <strong>このページは全体が「考察」</strong>（本デモの実測・分析・推定）。google/dpsynth のドキュメント記載ではありません。
-事実とドキュメント記載の対応はメインレポートの付録Cを参照。</p>
+事実とドキュメント記載の対応はメインレポートの第10章「参考文献」を参照。</p>
 <p>数値は本実行環境(<a href="https://github.com/gghatano/dpsynth-demo/blob/main/requirements.txt"><code>requirements.txt</code></a> 固定、Python 3.12.3)での結果。
 実験B が示す通り個々の値はシード/環境で揺れるため、<strong>傾向</strong>を読み取ってください。</p>
 </blockquote>

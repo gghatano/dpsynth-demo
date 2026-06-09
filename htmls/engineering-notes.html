@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DPSynth 解説・デモレポート</title>
+<style>
+:root { --fg:#1a1a1a; --muted:#666; --accent:#c0392b; --line:#e3e3e3; --bg:#fff;
+  --code:#f6f8fa; --sidebar:#fbfbfc; }
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { font-family: -apple-system, "Segoe UI", "Hiragino Sans", "Yu Gothic UI", "Meiryo", sans-serif;
+  color: var(--fg); background: #f3f4f6; line-height: 1.85; margin: 0; }
+.hero { background: linear-gradient(135deg, #2c3e50 0%, #c0392b 130%); color: #fff; padding: 36px 24px 0; }
+.hero .inner { max-width: 1180px; margin: 0 auto; }
+.hero h1 { margin: 0 0 .3em; font-size: 1.8rem; border: none; color: #fff; }
+.hero p { margin: .2em 0; opacity: .92; font-size: .94rem; }
+.hero a { color: #ffe; }
+.nav { max-width: 1180px; margin: 16px auto 0; display: flex; gap: 6px; }
+.nav a { padding: 9px 18px; border-radius: 8px 8px 0 0; background: rgba(255,255,255,.14);
+  color: #fff; text-decoration: none; font-size: .9rem; border: 1px solid rgba(255,255,255,.25);
+  border-bottom: none; }
+.nav a.active { background: #f3f4f6; color: #c0392b; font-weight: 600; }
+.nav a:hover:not(.active) { background: rgba(255,255,255,.26); }
+.layout { max-width: 1180px; margin: 0 auto; display: grid;
+  grid-template-columns: 250px 1fr; gap: 32px; padding: 24px 24px 96px; }
+nav.toc { position: sticky; top: 18px; align-self: start; max-height: calc(100vh - 36px);
+  overflow-y: auto; background: var(--sidebar); border: 1px solid var(--line);
+  border-radius: 10px; padding: 14px 16px; font-size: .86rem; }
+nav.toc strong { display: block; margin-bottom: 8px; color: var(--accent); }
+nav.toc ul { list-style: none; padding-left: 0; margin: 0; }
+nav.toc ul ul { padding-left: 12px; }
+nav.toc li { margin: 3px 0; }
+nav.toc a { color: #34495e; text-decoration: none; display: block; padding: 2px 0; }
+nav.toc a:hover { color: var(--accent); }
+article { background: var(--bg); border: 1px solid var(--line); border-radius: 10px;
+  padding: 12px 40px 56px; box-shadow: 0 1px 10px rgba(0,0,0,.04); min-width: 0; }
+article > h1:first-of-type { display: none; }
+h2 { font-size: 1.45rem; margin-top: 2.2em; border-bottom: 1px solid var(--line);
+  padding-bottom: .3em; scroll-margin-top: 16px; }
+h3 { font-size: 1.16rem; margin-top: 1.7em; color: #222; scroll-margin-top: 16px; }
+h4 { font-size: 1.0rem; margin-top: 1.3em; color: var(--accent); }
+a { color: #1565c0; text-decoration: none; } a:hover { text-decoration: underline; }
+/* 出典タグ [n]（href="#refN"）を小さな上付きチップに */
+a[href^="#ref"] { font-size: .72em; vertical-align: super; line-height: 0; color: #1565c0;
+  background: #eef4fb; border: 1px solid #cfe0f3; border-radius: 4px; padding: 0 4px;
+  margin: 0 1px; text-decoration: none; white-space: nowrap; }
+a[href^="#ref"]:hover { background: #d7e8fb; text-decoration: none; }
+/* 出典リスト本体（付録C）のアンカー位置調整 */
+:target { scroll-margin-top: 18px; }
+code { background: var(--code); padding: .15em .4em; border-radius: 4px; font-size: .88em;
+  font-family: "Cascadia Code", Consolas, "SF Mono", monospace; }
+pre { background: var(--code); padding: 15px 18px; border-radius: 8px; overflow-x: auto;
+  border: 1px solid var(--line); }
+pre code { background: none; padding: 0; }
+table { border-collapse: collapse; width: 100%; margin: 1.2em 0; font-size: .9rem; display: block;
+  overflow-x: auto; }
+th, td { border: 1px solid var(--line); padding: 8px 11px; text-align: left; white-space: nowrap; }
+th { background: #f2f4f7; font-weight: 600; }
+tr:nth-child(even) td { background: #fbfbfc; }
+img { max-width: 100%; height: auto; display: block; margin: 1.2em auto; border: 1px solid var(--line);
+  border-radius: 8px; }
+.mermaid { background: #fff; border: 1px solid var(--line); border-radius: 8px;
+  padding: 14px; margin: 1.4em 0; text-align: center; overflow-x: auto; }
+blockquote { border-left: 4px solid var(--accent); margin: 1.2em 0; padding: .4em 1.2em;
+  background: #fdf3f2; color: #444; border-radius: 0 6px 6px 0; }
+blockquote.badge-doc { border-left-color: #1565c0; background: #eef4fb; color: #21303f; }
+blockquote.badge-note { border-left-color: #b9770e; background: #fdf6e9; color: #3a2e12; }
+blockquote.badge-legend { border-left-color: #607d8b; background: #eef1f3; color: #243; }
+hr { border: none; border-top: 1px solid var(--line); margin: 2.2em 0; }
+footer { max-width: 1180px; margin: 0 auto; padding: 24px; color: var(--muted); font-size: .85rem;
+  text-align: center; }
+@media (max-width: 860px) {
+  .layout { grid-template-columns: 1fr; }
+  nav.toc { position: static; max-height: none; }
+  article { padding: 12px 20px 40px; }
+}
+</style>
+</head>
+<body>
+<header class="hero"><div class="inner">
+  <h1>DPSynth 解説・実証デモ</h1>
+  <p>実行時に遭遇した実装・運用上の問題と対応の記録</p>
+</div><nav class="nav"><a href="index.html">📄 レポート</a><a href="experiments.html">🧪 追加実験</a><a href="setup.html">🛠 環境構築</a><a href="usage.html">🔌 API・CLI</a><a href="reproduce.html">🔁 再現手順</a><a href="engineering-notes.html" class="active">🐞 実装ノート</a></nav></header>
+<div class="layout">
+  <nav class="toc"><strong>目次</strong><div class="toc">
+<ul>
+<li><a href="#1">1. 遭遇した問題と対応</a></li>
+<li><a href="#2">2. 各問題の詳細</a><ul>
+<li><a href="#1_1">問題1: プラットフォーム制約</a></li>
+<li><a href="#2_1">問題2: パッケージング漏れ</a></li>
+<li><a href="#3">問題3: 未宣言依存</a></li>
+<li><a href="#4-independent">問題4: INDEPENDENT 機構の重複クリーク</a></li>
+<li><a href="#5">問題5: 小さい ε での数値的破綻</a></li>
+</ul>
+</li>
+<li><a href="#3_1">3. 位置づけ</a></li>
+</ul>
+</div>
+</nav>
+  <article><h1 id="_1">実装ノート: 実行時に遭遇した問題と対応</h1>
+<p>本ページは <a href="index.html">実証評価レポート</a> の付随資料であり、本デモを「再現可能に動作する」状態にするまでに遭遇した
+実装・運用上の問題と、その対応を記録する。これらはライブラリの成熟度を示す一次情報であり、
+研究上の知見そのものではなくエンジニアリング上の記録として整理する。</p>
+<blockquote class="badge-note">
+<p>🔎 本ページは全体が本デモの実行で得た一次情報である。該当コード位置は示すが、ドキュメントに記載された仕様ではない。
+出典タグ <strong>[n]</strong> はレポート本体の第10章「参考文献」に対応する。</p>
+</blockquote>
+<hr />
+<h2 id="1">1. 遭遇した問題と対応</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>問題</th>
+<th>原因</th>
+<th>対応</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Windows で <code>python-dp</code> が導入できない</td>
+<td><code>pipeline-dp</code> の依存 <code>python-dp</code>(Google C++ DP ライブラリ)が Linux/macOS ホイールのみ</td>
+<td><strong>WSL2 (Ubuntu) + Python 3.12</strong> に切り替えて解決</td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>pip install</code> 後に import できない</td>
+<td>ルート以外のサブパッケージに <code>__init__.py</code> が無く、<code>dpsynth.pipeline_transformations</code> 等が同梱されない</td>
+<td>各ディレクトリに <code>__init__.py</code> を補って解決</td>
+</tr>
+<tr>
+<td>3</td>
+<td>未宣言の依存</td>
+<td><code>tqdm</code> が <code>dependencies</code> に無く ImportError</td>
+<td>追加インストールで解決</td>
+</tr>
+<tr>
+<td>4</td>
+<td>INDEPENDENT 機構のクラッシュ</td>
+<td><code>generate()</code> が常に渡す 1-way 測定値 <a href="index.html#ref11">[11]</a> の上に、INDEPENDENT が同じ 1-way を再測定する <a href="index.html#ref12">[12]</a> ため、<code>mbi</code> 新版の <code>CliqueVector.expand</code> が「Cliques must be unique」で例外</td>
+<td><code>expand</code> へ渡すクリーク列を重複排除する <strong>1 行修正</strong>で解決（予算消費は不変）</td>
+</tr>
+<tr>
+<td>5</td>
+<td>小さい ε での会計破綻</td>
+<td>ε=0.1 でノイズ較正の区間探索が失敗(<code>NoBracketIntervalFoundError</code>)</td>
+<td>スイープを ε≥0.5 に調整</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="2">2. 各問題の詳細</h2>
+<h3 id="1_1">問題1: プラットフォーム制約</h3>
+<p><code>pipeline-dp</code> → <code>python-dp</code> の依存連鎖により、Windows ネイティブ環境では動作しない。
+Python のバージョン制約も <code>&gt;=3.12,&lt;3.14</code> と狭い。対処として WSL2 上に Python 3.12 環境を構築した（<a href="setup.html">環境構築ノート</a>）。</p>
+<h3 id="2_1">問題2: パッケージング漏れ</h3>
+<p><code>src/dpsynth/</code> 配下の一部サブパッケージ（<code>pipeline_transformations</code>, <code>dataset_descriptors</code>, <code>eval</code>, <code>local_mode</code>, <code>bin</code>）に
+<code>__init__.py</code> が存在せず、インストール後に import できない。<code>setup_env.sh</code> が各ディレクトリへ <code>__init__.py</code> を補完する。</p>
+<h3 id="3">問題3: 未宣言依存</h3>
+<p><code>tqdm</code> が <code>pyproject.toml</code> の依存に含まれていないため、実行時に ImportError となる。固定依存（<a href="https://github.com/gghatano/dpsynth-demo/blob/main/requirements.txt"><code>requirements.txt</code></a>）側で補っている。</p>
+<h3 id="4-independent">問題4: INDEPENDENT 機構の重複クリーク</h3>
+<p>これは本デモで最も典型的な「研究コードと依存ライブラリの版ずれ」事例である。
+<code>generate()</code> は常に 1-way 測定値を機構へ渡す <a href="index.html#ref11">[11]</a> が、INDEPENDENT は内部で同じ 1-way を再測定する <a href="index.html#ref12">[12]</a>。
+結果として <code>mbi</code> 新版の <code>CliqueVector.expand</code> が重複クリークを検出して例外（「Cliques must be unique」）を投げる。
+対処は <a href="https://github.com/gghatano/dpsynth-demo/blob/main/patches/independent_dedup_cliques.patch"><code>patches/independent_dedup_cliques.patch</code></a> による 1 行修正で、
+<code>expand</code> へ渡すクリーク列を重複排除する。測定自体は変えないため、DP 予算消費は不変である。</p>
+<h3 id="5">問題5: 小さい ε での数値的破綻</h3>
+<p><code>ε=0.1</code> のような極端に強いプライバシー設定では、ノイズ較正の区間探索が失敗し <code>NoBracketIntervalFoundError</code> となる。
+本デモではプライバシー予算スイープを <code>ε≥0.5</code> に調整して回避した。</p>
+<hr />
+<h2 id="3_1">3. 位置づけ</h2>
+<p>これらの問題は、DPSynth が「公式サポート対象外の研究段階プロダクト」<a href="index.html#ref13">[13]</a> であることと整合する。
+PoC・研究用途には十分機能するが、本番採用にあたってはフォーク／パッチ管理と検証体制を前提とする必要がある。
+この観点はレポート本体の <a href="index.html#72">残課題（実装・運用上の残課題）</a> に対応する。</p>
+<hr />
+<p>← <a href="index.html">実証評価レポートに戻る</a></p></article>
+</div>
+<footer>
+  Source: <a href="https://github.com/gghatano/dpsynth-demo">https://github.com/gghatano/dpsynth-demo</a> · Upstream: <a href="https://github.com/google/dpsynth">google/dpsynth</a>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DPSynth 解説・デモレポート</title>
+<style>
+:root { --fg:#1a1a1a; --muted:#666; --accent:#c0392b; --line:#e3e3e3; --bg:#fff;
+  --code:#f6f8fa; --sidebar:#fbfbfc; }
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { font-family: -apple-system, "Segoe UI", "Hiragino Sans", "Yu Gothic UI", "Meiryo", sans-serif;
+  color: var(--fg); background: #f3f4f6; line-height: 1.85; margin: 0; }
+.hero { background: linear-gradient(135deg, #2c3e50 0%, #c0392b 130%); color: #fff; padding: 36px 24px 0; }
+.hero .inner { max-width: 1180px; margin: 0 auto; }
+.hero h1 { margin: 0 0 .3em; font-size: 1.8rem; border: none; color: #fff; }
+.hero p { margin: .2em 0; opacity: .92; font-size: .94rem; }
+.hero a { color: #ffe; }
+.nav { max-width: 1180px; margin: 16px auto 0; display: flex; gap: 6px; }
+.nav a { padding: 9px 18px; border-radius: 8px 8px 0 0; background: rgba(255,255,255,.14);
+  color: #fff; text-decoration: none; font-size: .9rem; border: 1px solid rgba(255,255,255,.25);
+  border-bottom: none; }
+.nav a.active { background: #f3f4f6; color: #c0392b; font-weight: 600; }
+.nav a:hover:not(.active) { background: rgba(255,255,255,.26); }
+.layout { max-width: 1180px; margin: 0 auto; display: grid;
+  grid-template-columns: 250px 1fr; gap: 32px; padding: 24px 24px 96px; }
+nav.toc { position: sticky; top: 18px; align-self: start; max-height: calc(100vh - 36px);
+  overflow-y: auto; background: var(--sidebar); border: 1px solid var(--line);
+  border-radius: 10px; padding: 14px 16px; font-size: .86rem; }
+nav.toc strong { display: block; margin-bottom: 8px; color: var(--accent); }
+nav.toc ul { list-style: none; padding-left: 0; margin: 0; }
+nav.toc ul ul { padding-left: 12px; }
+nav.toc li { margin: 3px 0; }
+nav.toc a { color: #34495e; text-decoration: none; display: block; padding: 2px 0; }
+nav.toc a:hover { color: var(--accent); }
+article { background: var(--bg); border: 1px solid var(--line); border-radius: 10px;
+  padding: 12px 40px 56px; box-shadow: 0 1px 10px rgba(0,0,0,.04); min-width: 0; }
+article > h1:first-of-type { display: none; }
+h2 { font-size: 1.45rem; margin-top: 2.2em; border-bottom: 1px solid var(--line);
+  padding-bottom: .3em; scroll-margin-top: 16px; }
+h3 { font-size: 1.16rem; margin-top: 1.7em; color: #222; scroll-margin-top: 16px; }
+h4 { font-size: 1.0rem; margin-top: 1.3em; color: var(--accent); }
+a { color: #1565c0; text-decoration: none; } a:hover { text-decoration: underline; }
+/* 出典タグ [n]（href="#refN"）を小さな上付きチップに */
+a[href^="#ref"] { font-size: .72em; vertical-align: super; line-height: 0; color: #1565c0;
+  background: #eef4fb; border: 1px solid #cfe0f3; border-radius: 4px; padding: 0 4px;
+  margin: 0 1px; text-decoration: none; white-space: nowrap; }
+a[href^="#ref"]:hover { background: #d7e8fb; text-decoration: none; }
+/* 出典リスト本体（付録C）のアンカー位置調整 */
+:target { scroll-margin-top: 18px; }
+code { background: var(--code); padding: .15em .4em; border-radius: 4px; font-size: .88em;
+  font-family: "Cascadia Code", Consolas, "SF Mono", monospace; }
+pre { background: var(--code); padding: 15px 18px; border-radius: 8px; overflow-x: auto;
+  border: 1px solid var(--line); }
+pre code { background: none; padding: 0; }
+table { border-collapse: collapse; width: 100%; margin: 1.2em 0; font-size: .9rem; display: block;
+  overflow-x: auto; }
+th, td { border: 1px solid var(--line); padding: 8px 11px; text-align: left; white-space: nowrap; }
+th { background: #f2f4f7; font-weight: 600; }
+tr:nth-child(even) td { background: #fbfbfc; }
+img { max-width: 100%; height: auto; display: block; margin: 1.2em auto; border: 1px solid var(--line);
+  border-radius: 8px; }
+.mermaid { background: #fff; border: 1px solid var(--line); border-radius: 8px;
+  padding: 14px; margin: 1.4em 0; text-align: center; overflow-x: auto; }
+blockquote { border-left: 4px solid var(--accent); margin: 1.2em 0; padding: .4em 1.2em;
+  background: #fdf3f2; color: #444; border-radius: 0 6px 6px 0; }
+blockquote.badge-doc { border-left-color: #1565c0; background: #eef4fb; color: #21303f; }
+blockquote.badge-note { border-left-color: #b9770e; background: #fdf6e9; color: #3a2e12; }
+blockquote.badge-legend { border-left-color: #607d8b; background: #eef1f3; color: #243; }
+hr { border: none; border-top: 1px solid var(--line); margin: 2.2em 0; }
+footer { max-width: 1180px; margin: 0 auto; padding: 24px; color: var(--muted); font-size: .85rem;
+  text-align: center; }
+@media (max-width: 860px) {
+  .layout { grid-template-columns: 1fr; }
+  nav.toc { position: static; max-height: none; }
+  article { padding: 12px 20px 40px; }
+}
+</style>
+</head>
+<body>
+<header class="hero"><div class="inner">
+  <h1>DPSynth 解説・実証デモ</h1>
+  <p>DPSynth の In-Memory API・CLI の利用方法と処理ライフサイクル</p>
+</div><nav class="nav"><a href="index.html">📄 レポート</a><a href="experiments.html">🧪 追加実験</a><a href="setup.html">🛠 環境構築</a><a href="usage.html" class="active">🔌 API・CLI</a><a href="reproduce.html">🔁 再現手順</a><a href="engineering-notes.html">🐞 実装ノート</a></nav></header>
+<div class="layout">
+  <nav class="toc"><strong>目次</strong><div class="toc">
+<ul>
+<li><a href="#1-in-memory-5">1. 処理ライフサイクル(In-Memory の 5 段階)</a></li>
+<li><a href="#2">2. 属性型(スキーマ定義)</a></li>
+<li><a href="#3-in-memory-api-dpsynthgenerate">3. In-Memory API: dpsynth.generate</a></li>
+<li><a href="#4-yamlcli">4. ドメイン定義(YAML)とCLI</a></li>
+<li><a href="#5-scalable-beam-api">5. Scalable Beam API（参考・本レポートでは未評価）</a></li>
+</ul>
+</div>
+</nav>
+  <article><h1 id="apicli-dpsynth">API・CLI 利用ノート: DPSynth の使い方</h1>
+<p>本ページは <a href="index.html">実証評価レポート</a> の付随資料であり、DPSynth の API・CLI の利用方法、属性型の定義、処理ライフサイクルをまとめる。
+研究上の知見・評価結果はレポート本体を、環境構築は <a href="setup.html">環境構築ノート</a> を参照のこと。</p>
+<blockquote>
+<p>本ページのコード例は利用方法の説明を目的とする。出典タグ <strong>[n]</strong> はレポート本体の第10章「参考文献」に対応する。</p>
+</blockquote>
+<hr />
+<h2 id="1-in-memory-5">1. 処理ライフサイクル(In-Memory の 5 段階)</h2>
+<p><code>dpsynth.generate()</code> 内部は以下の 5 段階で動作する <a href="index.html#ref5">[5]</a><a href="index.html#ref11">[11]</a>。</p>
+<ol>
+<li><strong>離散化 (Discretization)</strong>: 連続値は等頻度分位ビンに、オープン集合の文字列は DP パーティション選択で評価。</li>
+<li><strong>整数符号化 (Integer Encoding)</strong>: 全列を密な整数インデックス <code>[0, K-1]</code> に写像。</li>
+<li><strong>ドメイン圧縮 (Compression)</strong>: 1-way マージナルをガウスノイズ付きで測定し、稀なカテゴリを <code>"Other"</code> にまとめる。</li>
+<li><strong>機構実行 (Mechanism)</strong>: AIM / MST 等を実行。<code>mbi.MarkovRandomField</code> を Private-PGM のミラー降下で当てはめる。</li>
+<li><strong>サンプリング &amp; 逆変換</strong>: グラフィカルモデルから合成整数レコードを生成し、元の型(文字列・整数・浮動小数)へ復号。</li>
+</ol>
+<div class="mermaid">
+flowchart TD
+    A[機微なテーブルデータ] --> B[離散化・整数符号化]
+    B --> C["1-way マージナル測定 + ガウスノイズ<br/>ドメイン圧縮（稀カテゴリを Other へ）"]
+    C --> D{DP 機構を選択}
+    D -->|MST| E1["ペア相関の最大全域木<br/>+ 指数機構"]
+    D -->|AIM| E2["ワークロード適応で<br/>マージナルを反復選択・測定"]
+    D -->|INDEPENDENT| E3["1-way のみ<br/>全属性を独立とみなす"]
+    E1 --> F["Private-PGM / mbi<br/>マルコフ確率場をミラー降下で推定"]
+    E2 --> F
+    E3 --> F
+    F --> G[グラフィカルモデルから合成レコードをサンプリング]
+    G --> H[元のスキーマ・型へ復号]
+    H --> I([DP 合成テーブルデータ])
+</div>
+<hr />
+<h2 id="2">2. 属性型(スキーマ定義)</h2>
+<p>DPSynth は各列を 3 つの属性型のいずれかとして扱う <a href="index.html#ref6">[6]</a>。</p>
+<table>
+<thead>
+<tr>
+<th>型</th>
+<th>用途</th>
+<th>例</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>CategoricalAttribute</code></td>
+<td>取りうる値が既知の有限カテゴリ</td>
+<td>曜日、都道府県、真偽フラグ</td>
+</tr>
+<tr>
+<td><code>OpenSetCategoricalAttribute</code></td>
+<td>カテゴリ集合が未知/非有界(DP で値を発見)</td>
+<td>職種名、都市名</td>
+</tr>
+<tr>
+<td><code>NumericalAttribute</code></td>
+<td>連続値 or 順序付き整数(範囲指定)</td>
+<td>年齢、給与、取引額</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="3-in-memory-api-dpsynthgenerate">3. In-Memory API: <code>dpsynth.generate</code></h2>
+<div class="codehilite"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">dpsynth</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dpsynth</span><span class="w"> </span><span class="kn">import</span> <span class="n">discrete_mechanisms</span> <span class="k">as</span> <span class="n">dm</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dpsynth</span><span class="w"> </span><span class="kn">import</span> <span class="n">domain</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+
+<span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s2">&quot;sensitive.csv&quot;</span><span class="p">)</span>
+
+<span class="n">domains</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;age&quot;</span><span class="p">:</span> <span class="n">domain</span><span class="o">.</span><span class="n">NumericalAttribute</span><span class="p">(</span><span class="n">min_value</span><span class="o">=</span><span class="mi">17</span><span class="p">,</span> <span class="n">max_value</span><span class="o">=</span><span class="mi">90</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;int&quot;</span><span class="p">,</span> <span class="n">clip_to_range</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+    <span class="s2">&quot;education&quot;</span><span class="p">:</span> <span class="n">domain</span><span class="o">.</span><span class="n">CategoricalAttribute</span><span class="p">(</span><span class="n">possible_values</span><span class="o">=</span><span class="nb">sorted</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;education&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">())),</span>
+    <span class="s2">&quot;occupation&quot;</span><span class="p">:</span> <span class="n">domain</span><span class="o">.</span><span class="n">OpenSetCategoricalAttribute</span><span class="p">(</span><span class="n">default_value</span><span class="o">=</span><span class="s2">&quot;Unknown&quot;</span><span class="p">),</span>
+<span class="p">}</span>
+
+<span class="n">synthetic</span> <span class="o">=</span> <span class="n">dpsynth</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span>
+    <span class="n">data</span><span class="o">=</span><span class="n">df</span><span class="p">,</span>
+    <span class="n">domains</span><span class="o">=</span><span class="n">domains</span><span class="p">,</span>
+    <span class="n">epsilon</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+    <span class="n">delta</span><span class="o">=</span><span class="mf">1e-5</span><span class="p">,</span>
+    <span class="n">discrete_config</span><span class="o">=</span><span class="n">dm</span><span class="o">.</span><span class="n">MSTConfig</span><span class="p">(</span><span class="n">seed</span><span class="o">=</span><span class="mi">42</span><span class="p">),</span>   <span class="c1"># or AIMConfig / IndependentConfig</span>
+    <span class="n">numerical_bins</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">synthetic</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="s2">&quot;synthetic.csv&quot;</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</code></pre></div>
+
+<p>主な引数 <a href="index.html#ref4">[4]</a>: <code>epsilon</code> / <code>delta</code>(総予算)、<code>discrete_config</code>(機構)、<code>numerical_bins</code>(数値ビン数)、
+<code>one_way_marginal_budget_fraction</code>(1-way 測定+圧縮に割く予算割合)、<code>cross_attribute_constraints</code>(列間制約)、<code>skip_compression</code>。</p>
+<hr />
+<h2 id="4-yamlcli">4. ドメイン定義(YAML)とCLI</h2>
+<p>YAML の解釈規則と CLI フラグは公式ドキュメント準拠 <a href="index.html#ref6">[6]</a><a href="index.html#ref4">[4]</a>。</p>
+<div class="codehilite"><pre><span></span><code><span class="c1"># domain.yaml : possible_values→Categorical / min_value+max_value→Numerical / 空→OpenSet</span>
+<span class="nt">workclass</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">possible_values</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;?&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;Private&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;Self-emp-not-inc&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;Federal-gov&quot;</span><span class="p p-Indicator">]</span>
+<span class="w">  </span><span class="nt">out_of_domain_index</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0</span>
+<span class="nt">age</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">min_value</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">17.0</span>
+<span class="w">  </span><span class="nt">max_value</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">90.0</span>
+<span class="w">  </span><span class="nt">dtype</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;int&quot;</span>
+<span class="w">  </span><span class="nt">clip_to_range</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="nt">occupation</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">{}</span>
+</code></pre></div>
+
+<div class="codehilite"><pre><span></span><code>python3<span class="w"> </span>bin/main.py<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--dataset<span class="o">=</span>data.csv<span class="w"> </span>--domain<span class="o">=</span>domain.yaml<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--epsilon<span class="o">=</span><span class="m">1</span>.0<span class="w"> </span>--delta<span class="o">=</span>1e-8<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--mechanism<span class="o">=</span>mst<span class="w"> </span>--seed<span class="o">=</span><span class="m">12345</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--output_path<span class="o">=</span>/tmp/synthetic.csv
+<span class="c1"># --mechanism: mst | aim | independent | aim_gdp</span>
+</code></pre></div>
+
+<hr />
+<h2 id="5-scalable-beam-api">5. Scalable Beam API（参考・本レポートでは未評価）</h2>
+<p>分散実行は <code>data_generation.generate</code> + <code>BeamBackend</code> を用いる <a href="index.html#ref7">[7]</a>。
+<strong>本レポートの実験では未評価</strong>であり、ここでは利用方法の参考として示す。</p>
+<div class="codehilite"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">apache_beam</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">beam</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dpsynth</span><span class="w"> </span><span class="kn">import</span> <span class="n">data_generation</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dpsynth.dataset_descriptors</span><span class="w"> </span><span class="kn">import</span> <span class="n">csv_descriptor</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pipeline_dp</span>
+
+<span class="n">config</span> <span class="o">=</span> <span class="n">data_generation</span><span class="o">.</span><span class="n">DataGenerationConfig</span><span class="p">(</span>
+    <span class="n">epsilon</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">delta</span><span class="o">=</span><span class="mf">1e-5</span><span class="p">,</span>
+    <span class="n">mechanism</span><span class="o">=</span><span class="n">data_generation</span><span class="o">.</span><span class="n">Mechanism</span><span class="o">.</span><span class="n">MST</span><span class="p">,</span>
+    <span class="n">dataset_descriptor</span><span class="o">=</span><span class="n">descriptor</span><span class="p">,</span>
+    <span class="n">num_out_records</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="k">with</span> <span class="n">beam</span><span class="o">.</span><span class="n">Pipeline</span><span class="p">()</span> <span class="k">as</span> <span class="n">p</span><span class="p">:</span>
+    <span class="n">records</span> <span class="o">=</span> <span class="n">p</span> <span class="o">|</span> <span class="n">beam</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">ReadFromText</span><span class="p">(</span><span class="s2">&quot;adult.csv&quot;</span><span class="p">,</span> <span class="n">skip_header_lines</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">|</span> <span class="n">beam</span><span class="o">.</span><span class="n">Map</span><span class="p">(</span><span class="n">parse</span><span class="p">)</span>
+    <span class="n">synthetic</span> <span class="o">=</span> <span class="n">data_generation</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span><span class="n">input_data</span><span class="o">=</span><span class="n">records</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="n">config</span><span class="p">,</span> <span class="n">backend</span><span class="o">=</span><span class="n">pipeline_dp</span><span class="o">.</span><span class="n">BeamBackend</span><span class="p">())</span>
+</code></pre></div>
+
+<hr />
+<p>← <a href="index.html">実証評価レポートに戻る</a></p></article>
+</div>
+<footer>
+  Source: <a href="https://github.com/gghatano/dpsynth-demo">https://github.com/gghatano/dpsynth-demo</a> · Upstream: <a href="https://github.com/google/dpsynth">google/dpsynth</a>
+</footer>
+
+<script type="module">
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+  mermaid.initialize({ startOnLoad: true, theme: 'neutral', securityLevel: 'loose' });
+</script>
+
+</body>
+</html>

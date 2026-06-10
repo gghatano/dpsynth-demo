@@ -12,6 +12,9 @@
 | パス | 役割 |
 |---|---|
 | `docs/documentation-conventions.md` | 規約の本体（構成・記述の分離原則・実験の計画/実行・公開/再現性/課題管理の原則） |
+| **サブエージェント（モデル固定）** | |
+| `agents/researcher.md` | 調査・計画・レビュー担当（**fable**）。編集は Markdown に限る |
+| `agents/implementer.md` | 実行・実装担当（**opus**）。スクリプト・環境・実験・ビルド・修正適用 |
 | **オーケストレーター** | |
 | `skills/research-cycle/` | 全体統括。①骨子→②計画→③実行（反復）→④整理 の現在地を判定して順に進める |
 | `skills/doc-cycle/` | 整理系の統括。④〜⑦ を順次実行し統合レポートを出す（research-cycle の最終段） |

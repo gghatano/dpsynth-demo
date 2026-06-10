@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DPSynth 解説・デモレポート</title>
+<style>
+:root { --fg:#1a1a1a; --muted:#666; --accent:#c0392b; --line:#e3e3e3; --bg:#fff;
+  --code:#f6f8fa; --sidebar:#fbfbfc; }
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { font-family: -apple-system, "Segoe UI", "Hiragino Sans", "Yu Gothic UI", "Meiryo", sans-serif;
+  color: var(--fg); background: #f3f4f6; line-height: 1.85; margin: 0; }
+.hero { background: linear-gradient(135deg, #2c3e50 0%, #c0392b 130%); color: #fff; padding: 36px 24px 0; }
+.hero .inner { max-width: 1180px; margin: 0 auto; }
+.hero h1 { margin: 0 0 .3em; font-size: 1.8rem; border: none; color: #fff; }
+.hero p { margin: .2em 0; opacity: .92; font-size: .94rem; }
+.hero a { color: #ffe; }
+.nav { max-width: 1180px; margin: 16px auto 0; display: flex; gap: 6px; flex-wrap: wrap; }
+.nav a { padding: 9px 18px; border-radius: 8px 8px 0 0; background: rgba(255,255,255,.14);
+  color: #fff; text-decoration: none; font-size: .9rem; border: 1px solid rgba(255,255,255,.25);
+  border-bottom: none; }
+.nav a.active { background: #f3f4f6; color: #c0392b; font-weight: 600; }
+.nav a:hover:not(.active) { background: rgba(255,255,255,.26); }
+.layout { max-width: 1180px; margin: 0 auto; display: grid;
+  grid-template-columns: 250px 1fr; gap: 32px; padding: 24px 24px 96px; }
+nav.toc { position: sticky; top: 18px; align-self: start; max-height: calc(100vh - 36px);
+  overflow-y: auto; background: var(--sidebar); border: 1px solid var(--line);
+  border-radius: 10px; padding: 14px 16px; font-size: .86rem; }
+nav.toc strong { display: block; margin-bottom: 8px; color: var(--accent); }
+nav.toc ul { list-style: none; padding-left: 0; margin: 0; }
+nav.toc ul ul { padding-left: 12px; }
+nav.toc li { margin: 3px 0; }
+nav.toc a { color: #34495e; text-decoration: none; display: block; padding: 2px 0; }
+nav.toc a:hover { color: var(--accent); }
+article { background: var(--bg); border: 1px solid var(--line); border-radius: 10px;
+  padding: 12px 40px 56px; box-shadow: 0 1px 10px rgba(0,0,0,.04); min-width: 0; }
+article > h1:first-of-type { display: none; }
+h2 { font-size: 1.45rem; margin-top: 2.2em; border-bottom: 1px solid var(--line);
+  padding-bottom: .3em; scroll-margin-top: 16px; }
+h3 { font-size: 1.16rem; margin-top: 1.7em; color: #222; scroll-margin-top: 16px; }
+h4 { font-size: 1.0rem; margin-top: 1.3em; color: var(--accent); }
+a { color: #1565c0; text-decoration: none; } a:hover { text-decoration: underline; }
+/* 出典タグ [n]（href="#refN"）を小さな上付きチップに */
+a[href^="#ref"] { font-size: .72em; vertical-align: super; line-height: 0; color: #1565c0;
+  background: #eef4fb; border: 1px solid #cfe0f3; border-radius: 4px; padding: 0 4px;
+  margin: 0 1px; text-decoration: none; white-space: nowrap; }
+a[href^="#ref"]:hover { background: #d7e8fb; text-decoration: none; }
+/* 出典リスト本体（付録C）のアンカー位置調整 */
+:target { scroll-margin-top: 18px; }
+code { background: var(--code); padding: .15em .4em; border-radius: 4px; font-size: .88em;
+  font-family: "Cascadia Code", Consolas, "SF Mono", monospace; }
+pre { background: var(--code); padding: 15px 18px; border-radius: 8px; overflow-x: auto;
+  border: 1px solid var(--line); }
+pre code { background: none; padding: 0; }
+table { border-collapse: collapse; width: 100%; margin: 1.2em 0; font-size: .9rem; display: block;
+  overflow-x: auto; }
+th, td { border: 1px solid var(--line); padding: 8px 11px; text-align: left; white-space: nowrap; }
+th { background: #f2f4f7; font-weight: 600; }
+tr:nth-child(even) td { background: #fbfbfc; }
+img { max-width: 100%; height: auto; display: block; margin: 1.2em auto; border: 1px solid var(--line);
+  border-radius: 8px; }
+.mermaid { background: #fff; border: 1px solid var(--line); border-radius: 8px;
+  padding: 14px; margin: 1.4em 0; text-align: center; overflow-x: auto; }
+blockquote { border-left: 4px solid var(--accent); margin: 1.2em 0; padding: .4em 1.2em;
+  background: #fdf3f2; color: #444; border-radius: 0 6px 6px 0; }
+blockquote.badge-doc { border-left-color: #1565c0; background: #eef4fb; color: #21303f; }
+blockquote.badge-note { border-left-color: #b9770e; background: #fdf6e9; color: #3a2e12; }
+blockquote.badge-legend { border-left-color: #607d8b; background: #eef1f3; color: #243; }
+hr { border: none; border-top: 1px solid var(--line); margin: 2.2em 0; }
+footer { max-width: 1180px; margin: 0 auto; padding: 24px; color: var(--muted); font-size: .85rem;
+  text-align: center; }
+@media (max-width: 860px) {
+  .layout { grid-template-columns: 1fr; }
+  nav.toc { position: static; max-height: none; }
+  article { padding: 12px 20px 40px; }
+}
+</style>
+</head>
+<body>
+<header class="hero"><div class="inner">
+  <h1>DPSynth 解説・実証デモ</h1>
+  <p>MST / AIM / INDEPENDENT をどう選ぶか — 公式ドキュメントの記述と本デモの実験結果に基づく実践ガイド</p>
+</div><nav class="nav"><a href="index.html">📄 レポート</a><a href="experiments.html">🧪 追加実験</a><a href="method-selection.html" class="active">🧭 手法選定</a><a href="method-mst.html">🌲 MST</a><a href="method-aim.html">♻️ AIM</a><a href="method-independent.html">📊 INDEPENDENT</a><a href="setup.html">🛠 環境構築</a><a href="usage.html">🔌 API・CLI</a><a href="reproduce.html">🔁 再現手順</a><a href="engineering-notes.html">🐞 実装ノート</a></nav></header>
+<div class="layout">
+  <nav class="toc"><strong>目次</strong><div class="toc">
+<ul>
+<li><a href="#1">1. 大前提: ライブラリは選んでくれない</a></li>
+<li><a href="#2">2. 選定フローチャート</a></li>
+<li><a href="#3">3. 観点別の比較表</a></li>
+<li><a href="#4">4. 観点別の考え方</a><ul>
+<li><a href="#41">4.1 相関の保持（最大の分かれ目）</a></li>
+<li><a href="#42">4.2 計算時間・スケール</a></li>
+<li><a href="#43">4.3 プライバシー予算 ε との関係</a></li>
+<li><a href="#44">4.4 数値列が多いデータ</a></li>
+<li><a href="#45">4.5 複数シードで検証する</a></li>
+</ul>
+</li>
+<li><a href="#5">5. まとめ</a></li>
+<li><a href="#6">6. 参考リンク</a></li>
+</ul>
+</div>
+</nav>
+  <article><h1 id="mst-aim-independent">手法選定ガイド: MST / AIM / INDEPENDENT をどう選ぶか</h1>
+<p>各機構の詳細: <a href="method-mst.html">MST</a> ｜ <a href="method-aim.html">AIM</a> ｜ <a href="method-independent.html">INDEPENDENT</a> ｜ <a href="index.html">メインレポート</a></p>
+<blockquote>
+<p>⚠️ <strong>免責</strong>: DPSynth は機構を自動選定しない。<strong>どの機構を採用するか、またプライバシー予算
+（ε, δ）が要件を満たすかの最終判断は、利用者自身の責任</strong>である。本ページは
+<a href="https://github.com/google/dpsynth">google/dpsynth 公式ドキュメント</a>の記述と本デモの実験結果に基づく
+<strong>参考情報</strong>であり、結果は単一データセット（UCI Adult）・特定バージョンでの実測に基づく点に注意されたい。</p>
+</blockquote>
+<hr />
+<h2 id="1">1. 大前提: ライブラリは選んでくれない</h2>
+<p>まず押さえるべき事実が 3 つある。</p>
+<ol>
+<li><strong>DPSynth に機構の自動選定機能はない</strong>。In-Memory API <code>dpsynth.generate()</code> は
+   <code>discrete_config</code> 引数に渡された設定（<code>MSTConfig</code> / <code>AIMConfig</code> / <code>IndependentConfig</code>）の型を見て
+   実行する機構を決めるだけで、データ特性・予算・列数に応じた分岐は実装されていない。</li>
+<li><strong>デフォルトは MST</strong>（<code>discrete_config=MSTConfig()</code>）。何も指定しなければ MST が動くが、
+   これは「MST が最適と判断された」のではなく、単なる引数の既定値である。</li>
+<li><strong>公式ドキュメントに体系的な選定ガイドはない</strong>。あるのは断片的な記述
+   （INDEPENDENT は "baseline"、AIM は "time consuming (hours)"、SWIFT は高次元データで AIM を改善、など）のみで、
+   「データと目的に応じてベンチマークして選ぶ」のが前提の設計になっている。</li>
+</ol>
+<p>本ページは、この公式ドキュメントの隙間を本デモの実験結果で補う実践ガイドである。</p>
+<h2 id="2">2. 選定フローチャート</h2>
+<div class="mermaid">
+flowchart TD
+    Q1{"列間の相関を<br/>保持する必要があるか？"}
+    Q1 -->|"不要<br/>（単変量の集計・形式だけのテストデータ）"| IND["INDEPENDENT<br/>最速・最小予算"]
+    Q1 -->|必要| Q2{"重視するペア相関・<br/>下流タスクが明確か？"}
+    Q2 -->|"明確で、計算時間にも<br/>余裕がある"| AIM["AIM<br/>（workload 指定を検討）"]
+    Q2 -->|"不明確 / まず試したい"| MST["MST（デフォルト）<br/>から始める"]
+    MST --> Q3{"関心のあるペアの<br/>2-way 忠実度は十分か？<br/>（実データと比較して検証）"}
+    Q3 -->|不足| AIM
+    Q3 -->|十分| DONE([MST を採用])
+    AIM --> DONE2([AIM を採用])
+    IND --> DONE3([INDEPENDENT を採用])
+</div>
+<p>要点は次の 3 行に要約できる。</p>
+<ul>
+<li><strong>迷ったらまず MST（デフォルト）</strong>で生成し、関心のある集計・タスクで品質を検証する。</li>
+<li><strong>保持したいペア相関・下流タスクが明確で、計算時間に余裕がある → AIM</strong>（ワークロード指定も検討）。</li>
+<li><strong>周辺分布だけで十分・速度優先・比較基準が欲しい → INDEPENDENT</strong>。</li>
+</ul>
+<h2 id="3">3. 観点別の比較表</h2>
+<blockquote class="badge-legend">
+<p>📑 実験値は本デモ（UCI Adult 20,000 行・9 列・ε=1.0・δ=1e-5）の実測。
+「±」付きは複数シード（<a href="experiments.html">追加実験B</a>）、単一値は単一シード（<a href="index.html">メインレポート §5.1</a>）。</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>観点</th>
+<th><a href="method-mst.html">MST</a></th>
+<th><a href="method-aim.html">AIM</a></th>
+<th><a href="method-independent.html">INDEPENDENT</a></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>モデル化する依存関係</td>
+<td>2-way（最大全域木の d−1 ペアのみ）</td>
+<td>1〜3-way を適応選択（木の制約なし）</td>
+<td>なし（全列独立）</td>
+</tr>
+<tr>
+<td>ワークロード（重視マージナル）指定</td>
+<td>不可</td>
+<td><strong>可</strong>（<code>AIMConfig.workload</code>）</td>
+<td>不可</td>
+</tr>
+<tr>
+<td>生成時間（本デモ）</td>
+<td>約 10 秒</td>
+<td>約 90 秒（公式注記では数時間もありうる）</td>
+<td><strong>約 6 秒</strong></td>
+</tr>
+<tr>
+<td>平均 1-way TVD（複数シード）↓</td>
+<td>0.093 ± 0.019</td>
+<td>0.109 ± 0.020</td>
+<td><strong>0.086 ± 0.020</strong></td>
+</tr>
+<tr>
+<td>下流タスク TSTR AUC（複数シード）↑</td>
+<td><strong>0.670 ± 0.087</strong></td>
+<td>0.666 ± 0.153</td>
+<td>0.490 ± 0.090</td>
+</tr>
+<tr>
+<td>2-way 忠実度（実験C）↓</td>
+<td>ペア依存（0.04〜0.36）</td>
+<td><strong>全ペア最良（0.03〜0.15）</strong></td>
+<td>中位（0.13〜0.20）</td>
+</tr>
+<tr>
+<td>主なチューニング項目</td>
+<td>ほぼ不要</td>
+<td><code>max_rounds</code> / <code>max_model_size</code> / <code>workload</code></td>
+<td>なし</td>
+</tr>
+<tr>
+<td>公式での位置づけ</td>
+<td><strong>デフォルト機構</strong></td>
+<td>高精度だが高コスト</td>
+<td>ベースライン</td>
+</tr>
+</tbody>
+</table>
+<h2 id="4">4. 観点別の考え方</h2>
+<h3 id="41">4.1 相関の保持（最大の分かれ目）</h3>
+<ul>
+<li>1-way（各列単独）の分布は <strong>3 機構でほぼ差が出ない</strong>（実験B: TVD 0.09〜0.11）。
+  機構の差が現れるのは<strong>列間の相関</strong>であり、「1-way が合っているか」で機構を選んではいけない。</li>
+<li>AIM は全ペアで 2-way 忠実度が最良（実験C）。<strong>特定のクロス集計・予測タスクが目的なら AIM が第一候補</strong>。</li>
+<li>MST は木に載ったペアは良好だが、<strong>木から外れたペアは INDEPENDENT より悪化することすらある</strong>（実験C）。
+  MST 採用時は、関心のあるペアの 2-way 分布を実データと突き合わせて検証すること。</li>
+</ul>
+<h3 id="42">4.2 計算時間・スケール</h3>
+<ul>
+<li>本デモ（9 列・2 万行）で MST 約 10 秒、AIM 約 90 秒。AIM は列数・<code>max_model_size</code> を増やすと
+  公式注記のとおり<strong>数時間</strong>級になりうる。試行錯誤の回数が必要な段階では MST が現実的。</li>
+<li>列数が多い・カーディナリティ（値の種類）が大きいデータでは、各機構の
+  <code>maximum_marginal_size</code> / <code>max_marginal_size</code> が巨大なマージナルを自動除外するが、
+  モデルサイズ（AIM の <code>max_model_size</code>）と実行時間のトレードオフは利用者が握る必要がある。</li>
+<li>なお公式ドキュメントは、さらに高次元のデータ向けに <strong>SWIFT</strong>（未発表・本デモでは未評価）が
+  AIM を改善すると記述している。</li>
+</ul>
+<h3 id="43">4.3 プライバシー予算 ε との関係</h3>
+<ul>
+<li>ε を上げれば分布再現性はおおむね単調に改善する（MST スイープ: ε=0.5 で TVD 0.120 → ε=10 で 0.059、
+  <a href="index.html">メインレポート §5.1</a>）。<strong>機構選定と ε 選定は別の軸</strong>であり、まず ε を要件側
+  （守りたい保証）から決め、その予算内で機構を比較するのが筋。</li>
+<li>タイトな予算（小さい ε）では、選定や反復に予算を割く余裕が乏しくなる。
+  相関が不要なら、全予算を 1-way に注げる INDEPENDENT が合理的な場合もある。</li>
+<li>経験的プライバシー（距離ベース MIA）は本デモの範囲では<strong>機構・ε によらず AUC ≈ 0.51</strong> で
+  頑健だった（<a href="experiments.html">追加実験D</a>）。ただしこれは弱い攻撃での確認であり、保証の根拠は ε, δ に置くこと。</li>
+</ul>
+<h3 id="44">4.4 数値列が多いデータ</h3>
+<ul>
+<li>本デモでは<strong>数値列の離散化（<code>numerical_bins</code>）が機構差より大きな誤差要因</strong>だった
+  （<a href="experiments.html">追加実験A</a>: <code>hours-per-week</code> はビン数で TVD が 0.15〜0.83 まで変動）。
+  数値列が主役のデータでは、機構選定の前に<strong>ビン数の検討</strong>を済ませる方が効果が大きい。</li>
+</ul>
+<h3 id="45">4.5 複数シードで検証する</h3>
+<ul>
+<li>単一シードでは AIM &gt; MST（AUC 0.768 vs 0.687）に見えたが、複数シードでは差 0.004 と
+  <strong>標準偏差の中に消えた</strong>（実験B)。機構間の小さな差で意思決定する場合は、
+  必ず複数シードの平均±標準偏差で比較すること。</li>
+</ul>
+<h2 id="5">5. まとめ</h2>
+<table>
+<thead>
+<tr>
+<th>ユースケース</th>
+<th>推奨</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>とりあえず試す・ベンチマークの起点</td>
+<td><strong>MST</strong>（デフォルト）</td>
+</tr>
+<tr>
+<td>重視するクロス集計・予測タスクが明確、時間に余裕あり</td>
+<td><strong>AIM</strong>（+ <code>workload</code> 指定）</td>
+</tr>
+<tr>
+<td>周辺分布のみで十分・最速・比較基準</td>
+<td><strong>INDEPENDENT</strong></td>
+</tr>
+<tr>
+<td>数値列の再現性が悪い</td>
+<td>機構変更の前に <code>numerical_bins</code> を調整（実験A）</td>
+</tr>
+<tr>
+<td>機構間の僅差で迷う</td>
+<td>複数シードで再評価（実験B）</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>⚠️ 繰り返しになるが、<strong>最終的な手法選定と、プライバシー要件（ε, δ、プライバシー単位、前提条件）の妥当性判断は
+利用者の責任</strong>である。本ガイドの実験値は UCI Adult・特定バージョン・限られたシード数での結果であり、
+別のデータ・条件では順位が変わりうる。重要な意思決定の前には、対象データでの再評価と
+<a href="https://github.com/google/dpsynth">google/dpsynth 公式ドキュメント</a>・原論文の確認を推奨する。</p>
+</blockquote>
+<h2 id="6">6. 参考リンク</h2>
+<ul>
+<li>公式: <a href="https://github.com/google/dpsynth">google/dpsynth</a>（README "Supported Synthesis Algorithms" / "Which Code Path Should I Use?"）</li>
+<li>原論文: <a href="https://arxiv.org/abs/2108.04978">MST: arXiv:2108.04978</a> ／ <a href="https://arxiv.org/abs/2201.12677">AIM: arXiv:2201.12677</a> ／ <a href="https://arxiv.org/abs/1901.09136">Private-PGM: arXiv:1901.09136</a></li>
+<li>本デモの根拠データ: <a href="index.html">メインレポート §5（結果）・§8（考察）</a> ／ <a href="experiments.html">追加実験 A〜D</a></li>
+</ul>
+<hr />
+<p>各機構の詳細: <a href="method-mst.html">MST の解説</a> ｜ <a href="method-aim.html">AIM の解説</a> ｜ <a href="method-independent.html">INDEPENDENT の解説</a></p></article>
+</div>
+<footer>
+  Source: <a href="https://github.com/gghatano/dpsynth-demo">https://github.com/gghatano/dpsynth-demo</a> · Upstream: <a href="https://github.com/google/dpsynth">google/dpsynth</a>
+</footer>
+
+<script type="module">
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+  mermaid.initialize({ startOnLoad: true, theme: 'neutral', securityLevel: 'loose' });
+</script>
+
+</body>
+</html>

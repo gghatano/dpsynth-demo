@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DPSynth 解説・デモレポート</title>
+<style>
+:root { --fg:#1a1a1a; --muted:#666; --accent:#c0392b; --line:#e3e3e3; --bg:#fff;
+  --code:#f6f8fa; --sidebar:#fbfbfc; }
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { font-family: -apple-system, "Segoe UI", "Hiragino Sans", "Yu Gothic UI", "Meiryo", sans-serif;
+  color: var(--fg); background: #f3f4f6; line-height: 1.85; margin: 0; }
+.hero { background: linear-gradient(135deg, #2c3e50 0%, #c0392b 130%); color: #fff; padding: 36px 24px 0; }
+.hero .inner { max-width: 1180px; margin: 0 auto; }
+.hero h1 { margin: 0 0 .3em; font-size: 1.8rem; border: none; color: #fff; }
+.hero p { margin: .2em 0; opacity: .92; font-size: .94rem; }
+.hero a { color: #ffe; }
+.nav { max-width: 1180px; margin: 16px auto 0; display: flex; gap: 6px; flex-wrap: wrap; }
+.nav a { padding: 9px 18px; border-radius: 8px 8px 0 0; background: rgba(255,255,255,.14);
+  color: #fff; text-decoration: none; font-size: .9rem; border: 1px solid rgba(255,255,255,.25);
+  border-bottom: none; }
+.nav a.active { background: #f3f4f6; color: #c0392b; font-weight: 600; }
+.nav a:hover:not(.active) { background: rgba(255,255,255,.26); }
+.layout { max-width: 1180px; margin: 0 auto; display: grid;
+  grid-template-columns: 250px 1fr; gap: 32px; padding: 24px 24px 96px; }
+nav.toc { position: sticky; top: 18px; align-self: start; max-height: calc(100vh - 36px);
+  overflow-y: auto; background: var(--sidebar); border: 1px solid var(--line);
+  border-radius: 10px; padding: 14px 16px; font-size: .86rem; }
+nav.toc strong { display: block; margin-bottom: 8px; color: var(--accent); }
+nav.toc ul { list-style: none; padding-left: 0; margin: 0; }
+nav.toc ul ul { padding-left: 12px; }
+nav.toc li { margin: 3px 0; }
+nav.toc a { color: #34495e; text-decoration: none; display: block; padding: 2px 0; }
+nav.toc a:hover { color: var(--accent); }
+article { background: var(--bg); border: 1px solid var(--line); border-radius: 10px;
+  padding: 12px 40px 56px; box-shadow: 0 1px 10px rgba(0,0,0,.04); min-width: 0; }
+article > h1:first-of-type { display: none; }
+h2 { font-size: 1.45rem; margin-top: 2.2em; border-bottom: 1px solid var(--line);
+  padding-bottom: .3em; scroll-margin-top: 16px; }
+h3 { font-size: 1.16rem; margin-top: 1.7em; color: #222; scroll-margin-top: 16px; }
+h4 { font-size: 1.0rem; margin-top: 1.3em; color: var(--accent); }
+a { color: #1565c0; text-decoration: none; } a:hover { text-decoration: underline; }
+/* 出典タグ [n]（href="#refN"）を小さな上付きチップに */
+a[href^="#ref"] { font-size: .72em; vertical-align: super; line-height: 0; color: #1565c0;
+  background: #eef4fb; border: 1px solid #cfe0f3; border-radius: 4px; padding: 0 4px;
+  margin: 0 1px; text-decoration: none; white-space: nowrap; }
+a[href^="#ref"]:hover { background: #d7e8fb; text-decoration: none; }
+/* 出典リスト本体（付録C）のアンカー位置調整 */
+:target { scroll-margin-top: 18px; }
+code { background: var(--code); padding: .15em .4em; border-radius: 4px; font-size: .88em;
+  font-family: "Cascadia Code", Consolas, "SF Mono", monospace; }
+pre { background: var(--code); padding: 15px 18px; border-radius: 8px; overflow-x: auto;
+  border: 1px solid var(--line); }
+pre code { background: none; padding: 0; }
+table { border-collapse: collapse; width: 100%; margin: 1.2em 0; font-size: .9rem; display: block;
+  overflow-x: auto; }
+th, td { border: 1px solid var(--line); padding: 8px 11px; text-align: left; white-space: nowrap; }
+th { background: #f2f4f7; font-weight: 600; }
+tr:nth-child(even) td { background: #fbfbfc; }
+img { max-width: 100%; height: auto; display: block; margin: 1.2em auto; border: 1px solid var(--line);
+  border-radius: 8px; }
+.mermaid { background: #fff; border: 1px solid var(--line); border-radius: 8px;
+  padding: 14px; margin: 1.4em 0; text-align: center; overflow-x: auto; }
+blockquote { border-left: 4px solid var(--accent); margin: 1.2em 0; padding: .4em 1.2em;
+  background: #fdf3f2; color: #444; border-radius: 0 6px 6px 0; }
+blockquote.badge-doc { border-left-color: #1565c0; background: #eef4fb; color: #21303f; }
+blockquote.badge-note { border-left-color: #b9770e; background: #fdf6e9; color: #3a2e12; }
+blockquote.badge-legend { border-left-color: #607d8b; background: #eef1f3; color: #243; }
+hr { border: none; border-top: 1px solid var(--line); margin: 2.2em 0; }
+footer { max-width: 1180px; margin: 0 auto; padding: 24px; color: var(--muted); font-size: .85rem;
+  text-align: center; }
+@media (max-width: 860px) {
+  .layout { grid-template-columns: 1fr; }
+  nav.toc { position: static; max-height: none; }
+  article { padding: 12px 20px 40px; }
+}
+</style>
+</head>
+<body>
+<header class="hero"><div class="inner">
+  <h1>DPSynth 解説・実証デモ</h1>
+  <p>INDEPENDENT — 全列を独立にモデル化する最速のベースライン機構の解説</p>
+</div><nav class="nav"><a href="index.html">📄 レポート</a><a href="experiments.html">🧪 追加実験</a><a href="method-selection.html">🧭 手法選定</a><a href="method-mst.html">🌲 MST</a><a href="method-aim.html">♻️ AIM</a><a href="method-independent.html" class="active">📊 INDEPENDENT</a><a href="setup.html">🛠 環境構築</a><a href="usage.html">🔌 API・CLI</a><a href="reproduce.html">🔁 再現手順</a><a href="engineering-notes.html">🐞 実装ノート</a></nav></header>
+<div class="layout">
+  <nav class="toc"><strong>目次</strong><div class="toc">
+<ul>
+<li><a href="#1">1. 位置づけ</a></li>
+<li><a href="#2">2. アルゴリズムの仕組み</a></li>
+<li><a href="#3">3. プライバシー予算の使われ方</a></li>
+<li><a href="#4-independentconfig">4. 主なパラメータ（IndependentConfig）</a></li>
+<li><a href="#5">5. 得意なケース・苦手なケース</a></li>
+<li><a href="#6">6. 本デモでの実験結果</a></li>
+<li><a href="#7">7. 参考リンク</a></li>
+</ul>
+</div>
+</nav>
+  <article><h1 id="independent">INDEPENDENT 機構の解説</h1>
+<p><a href="method-selection.html">手法選定ガイド</a> ｜ <a href="method-mst.html">MST の解説</a> ｜ <a href="method-aim.html">AIM の解説</a> ｜ <a href="index.html">メインレポート</a></p>
+<blockquote class="badge-doc">
+<p>📘 本ページのアルゴリズム・実装の記述は
+<a href="https://github.com/google/dpsynth">google/dpsynth</a> のソースコード（<code>dpsynth/discrete_mechanisms/independent.py</code>、2026-06 時点の main ブランチ）に基づく。
+実験数値の節（🔎）のみ本デモの実測である。</p>
+</blockquote>
+<hr />
+<h2 id="1">1. 位置づけ</h2>
+<p><strong>INDEPENDENT 機構</strong>は、公式ドキュメントが "<strong>baseline mechanism</strong>" と明記する最も単純な手法である。
+各列の周辺分布（1-way マージナル）だけを測定し、<strong>全属性を互いに独立</strong>としてモデル化する。
+列間の相関は一切保持されない。</p>
+<p>外部論文に基づく手法ではなく、「相関を全部捨てるとどうなるか」の比較基準（ベースライン）として、
+また相関が不要な用途での最速・最小予算の選択肢として位置づけられる。</p>
+<h2 id="2">2. アルゴリズムの仕組み</h2>
+<div class="mermaid">
+flowchart LR
+    A["① 総予算を列数 d で均等分割"] --> B["② 各列の 1-way マージナルを<br/>ガウス機構で測定"]
+    B --> C["③ Private-PGM で<br/>独立な同時分布を推定"]
+    C --> D([列ごとに独立に<br/>サンプリング])
+</div>
+<ol>
+<li>総予算を列数 d で均等に分け、各列に割り当てる。</li>
+<li>各列の周辺分布（値ごとの度数）をガウス機構で測定する。SELECT ステップは存在しない
+   （測るものが最初から決まっているため、指数機構は使われない）。</li>
+<li>ノイズ付き 1-way 測定値を Private-PGM（mirror descent）に渡し、非負性・総数整合を満たす
+   周辺分布を推定する。同時分布は各列の周辺分布の積（= 独立）になる。</li>
+</ol>
+<h2 id="3">3. プライバシー予算の使われ方</h2>
+<table>
+<thead>
+<tr>
+<th>ステップ</th>
+<th>予算配分</th>
+<th>機構</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>全列の 1-way マージナル測定</td>
+<td>総予算を d 列で均等割り</td>
+<td>ガウス機構</td>
+</tr>
+</tbody>
+</table>
+<p>選定（指数機構）に予算を割かないため、<strong>同じ総予算なら 1-way の測定精度は 3 機構で最も高くなりやすい</strong>。</p>
+<h2 id="4-independentconfig">4. 主なパラメータ（<code>IndependentConfig</code>）</h2>
+<table>
+<thead>
+<tr>
+<th>パラメータ</th>
+<th>既定値</th>
+<th>意味</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>pgm_iters</code></td>
+<td>5000</td>
+<td>mirror descent の反復回数</td>
+</tr>
+<tr>
+<td><code>seed</code></td>
+<td>0</td>
+<td>乱数シード</td>
+</tr>
+</tbody>
+</table>
+<p>調整すべきパラメータがほぼ無いことも、ベースラインとしての使いやすさにつながっている。</p>
+<h2 id="5">5. 得意なケース・苦手なケース</h2>
+<p><strong>得意</strong>:</p>
+<ul>
+<li><strong>各列の周辺分布（単純集計）だけ再現できればよい</strong>用途。例: 列ごとの度数分布の共有、
+  ダッシュボードの単変量サマリー、スキーマ・形式だけ本物に似たテストデータ。</li>
+<li><strong>最速・最小コスト</strong>。本デモでは 3 機構中最速（約 6 秒）。</li>
+<li>他機構を評価するときの<strong>比較基準</strong>。「相関保持の効果」は INDEPENDENT との差分で測れる。</li>
+</ul>
+<p><strong>苦手</strong>:</p>
+<ul>
+<li><strong>列間の相関を使う用途すべて</strong>。クロス集計、相関分析、予測モデルの学習データには不適。
+  本デモの下流タスク（収入予測）では TSTR F1 がほぼ 0（全件を多数派クラスと予測）になった。</li>
+<li>「1-way の分布が合っているから良い合成データだ」という誤解を誘発しやすい点にも注意
+  （1-way 指標では他機構とほぼ差が出ない。下記の実験B）。</li>
+</ul>
+<h2 id="6">6. 本デモでの実験結果</h2>
+<blockquote class="badge-note">
+<p>🔎 以下は本デモ（UCI Adult、20,000 行、9 列、δ=1e-5）の実測。詳細は各リンク先を参照。</p>
+</blockquote>
+<ul>
+<li><strong>機構比較（ε=1.0、<a href="index.html">メインレポート §5.1</a>）</strong>: 平均 1-way TVD 0.106 は他機構と同水準だが、
+  TSTR AUC <strong>0.433</strong>・F1 <strong>0.003</strong> と下流タスクでは壊滅的。生成時間は最速の<strong>約 6 秒</strong>。</li>
+<li><strong>複数シード（<a href="experiments.html">追加実験B</a>）</strong>: 平均 1-way TVD 0.086 ± 0.020 は<strong>むしろ 3 機構で最良</strong>。
+  しかし TSTR AUC 0.490 ± 0.090 で<strong>一貫して最下位</strong>。「1-way の一致は下流の有用性を意味しない」ことの実例。</li>
+<li><strong>2-way 忠実度（<a href="experiments.html">追加実験C</a>）</strong>: 全ペアで AIM に劣るが、
+  <code>marital-status×income</code>・<code>occupation×income</code> では <strong>MST より良かった</strong>
+  （MST の全域木から外れたペアでは、誤った相関を張るより独立仮定の方がマシになる場合がある）。</li>
+<li><strong>MIA 耐性（<a href="experiments.html">追加実験D</a>）</strong>: AUC 0.511 で他機構と同様に攻撃の手がかりはほぼ無い。</li>
+</ul>
+<h2 id="7">7. 参考リンク</h2>
+<ul>
+<li>実装: <a href="https://github.com/google/dpsynth/blob/main/dpsynth/discrete_mechanisms/independent.py"><code>dpsynth/discrete_mechanisms/independent.py</code></a></li>
+<li>公式ドキュメント: <a href="https://github.com/google/dpsynth">google/dpsynth README「Supported Synthesis Algorithms」</a>（"A baseline mechanism" との記載）</li>
+<li>推定エンジン: <a href="https://github.com/ryan112358/mbi">Private-PGM / <code>mbi</code></a></li>
+<li>補足: 本デモでは INDEPENDENT 機構の重複クリーク・バグに対し
+  <a href="https://github.com/gghatano/dpsynth-demo/blob/main/patches/independent_dedup_cliques.patch">1 行パッチ</a>
+  を当てて実行している（<a href="engineering-notes.html">実装ノート</a> 参照）。</li>
+</ul>
+<hr />
+<p>← <a href="method-selection.html">手法選定ガイドに戻る</a></p></article>
+</div>
+<footer>
+  Source: <a href="https://github.com/gghatano/dpsynth-demo">https://github.com/gghatano/dpsynth-demo</a> · Upstream: <a href="https://github.com/google/dpsynth">google/dpsynth</a>
+</footer>
+
+<script type="module">
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+  mermaid.initialize({ startOnLoad: true, theme: 'neutral', securityLevel: 'loose' });
+</script>
+
+</body>
+</html>

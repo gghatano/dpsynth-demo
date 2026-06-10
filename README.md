@@ -7,6 +7,9 @@
 > **Apache Beam を用いた Scalable Pipeline API(分散処理)は対象外**です(機能紹介はしますが実行・評価はしていません)。
 
 - 実証評価レポート本体（論文調・10 章構成）→ **[REPORT.md](REPORT.md)** / 公開サイト **https://gghatano.github.io/dpsynth-demo/**
+- 手法（生成機構）の解説と選定ガイド:
+  - 手法選定ガイド（MST / AIM / INDEPENDENT の使い分け）→ **[method-selection.md](method-selection.md)**
+  - 各機構の解説 → **[method-mst.md](method-mst.md)** / **[method-aim.md](method-aim.md)** / **[method-independent.md](method-independent.md)**
 - エンジニアリング情報は本体から分離し、別ページに集約:
   - 環境構築・依存関係 → **[setup.md](setup.md)**
   - API・CLI 利用方法 → **[usage.md](usage.md)**
@@ -47,6 +50,10 @@ dpsynth-demo/
 ├── README.md                  … 本ファイル（再現手順）
 ├── REPORT.md                  … 実証評価レポート本体（論文調・10 章構成, Markdown）
 ├── EXPERIMENTS.md             … 追加実験（numerical_bins・マルチシード・2-way・MIA）
+├── method-selection.md        … 手法選定ガイド（MST/AIM/INDEPENDENT の使い分け）
+├── method-mst.md              … MST 機構の解説（デフォルト機構）
+├── method-aim.md              … AIM 機構の解説
+├── method-independent.md      … INDEPENDENT 機構の解説
 ├── setup.md                   … 環境構築と依存関係（本体から分離）
 ├── usage.md                   … API・CLI 利用方法・処理ライフサイクル（本体から分離）
 ├── reproduce.md               … 実験再現手順（本体から分離）
@@ -54,6 +61,8 @@ dpsynth-demo/
 ├── htmls/                      … ビルド済み HTML（Pages 公開元・直接閲覧用）
 │   ├── index.html             …   レポート本体（Pages のトップ）
 │   ├── experiments.html       …   追加実験
+│   ├── method-selection.html / method-mst.html / method-aim.html / method-independent.html
+│   │                          …   手法選定ガイドと各機構の解説ページ
 │   ├── setup.html / usage.html / reproduce.html / engineering-notes.html
 │   │                          …   分離したエンジニアリング各ページ
 ├── requirements.txt           … 全依存をバージョン固定したロックファイル（再現性の要）
@@ -112,7 +121,8 @@ DP 合成データの再生成は不要で、`markdown` だけで数十秒でビ
 3. 完了後、`https://gghatano.github.io/dpsynth-demo/` で公開されます。
 
 ローカル確認: `python -m http.server 8099 --directory htmls` → http://localhost:8099/
-公開ページは **レポート(index)** と **追加実験(experiments)** の2ページ構成（上部タブで切替）。
+公開ページは **レポート(index)**・**追加実験(experiments)**・**手法選定ガイド + 各機構解説(method-*)**・
+エンジニアリング各ページの構成（上部タブで切替）。
 
 ## 今後の課題（Issue 一括作成）
 

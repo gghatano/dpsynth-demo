@@ -16,7 +16,7 @@ body { font-family: -apple-system, "Segoe UI", "Hiragino Sans", "Yu Gothic UI", 
 .hero h1 { margin: 0 0 .3em; font-size: 1.8rem; border: none; color: #fff; }
 .hero p { margin: .2em 0; opacity: .92; font-size: .94rem; }
 .hero a { color: #ffe; }
-.nav { max-width: 1180px; margin: 16px auto 0; display: flex; gap: 6px; }
+.nav { max-width: 1180px; margin: 16px auto 0; display: flex; gap: 6px; flex-wrap: wrap; }
 .nav a { padding: 9px 18px; border-radius: 8px 8px 0 0; background: rgba(255,255,255,.14);
   color: #fff; text-decoration: none; font-size: .9rem; border: 1px solid rgba(255,255,255,.25);
   border-bottom: none; }
@@ -81,7 +81,7 @@ footer { max-width: 1180px; margin: 0 auto; padding: 24px; color: var(--muted); 
 <header class="hero"><div class="inner">
   <h1>DPSynth 解説・実証デモ</h1>
   <p>差分プライバシーを満たす合成テーブルデータ生成ライブラリ <a href="https://github.com/google/dpsynth">google/dpsynth</a> を題材にした実証評価レポート</p>
-</div><nav class="nav"><a href="index.html" class="active">📄 レポート</a><a href="experiments.html">🧪 追加実験</a><a href="setup.html">🛠 環境構築</a><a href="usage.html">🔌 API・CLI</a><a href="reproduce.html">🔁 再現手順</a><a href="engineering-notes.html">🐞 実装ノート</a></nav></header>
+</div><nav class="nav"><a href="index.html" class="active">📄 レポート</a><a href="experiments.html">🧪 追加実験</a><a href="method-selection.html">🧭 手法選定</a><a href="method-mst.html">🌲 MST</a><a href="method-aim.html">♻️ AIM</a><a href="method-independent.html">📊 INDEPENDENT</a><a href="setup.html">🛠 環境構築</a><a href="usage.html">🔌 API・CLI</a><a href="reproduce.html">🔁 再現手順</a><a href="engineering-notes.html">🐞 実装ノート</a></nav></header>
 <div class="layout">
   <nav class="toc"><strong>目次</strong><div class="toc">
 <ul>
@@ -228,6 +228,9 @@ footer { max-width: 1180px; margin: 0 auto; padding: 24px; color: var(--muted); 
 </tbody>
 </table>
 <p>いずれの機構も、推定エンジンとして <strong>Private-PGM</strong>（<a href="https://github.com/ryan112358/mbi"><code>mbi</code></a>、測定済みのマージナルと整合する同時分布をグラフィカルモデルとして推定する手法）を共有する <a href="#ref10">[10]</a>。すなわち各機構の違いは「<strong>どのマージナルを、どの予算配分で測定するか</strong>」という戦略の違いとして整理できる。</p>
+<blockquote class="badge-doc">
+<p>📘 <strong>機構選定に関する注記</strong>: In-Memory API <code>dpsynth.generate()</code> の<strong>デフォルト機構は MST</strong> である（<code>discrete_config</code> 引数の既定値が <code>MSTConfig()</code>）。DPSynth はデータ特性に応じて機構を自動選定する機能を持たないため、<strong>どの機構を採用するかはユーザ自身の責任で判断する必要がある</strong>。選定の考え方は <a href="https://github.com/google/dpsynth">google/dpsynth 公式ドキュメント</a>に断片的な記載があるのみのため、本サイトでは補足として各機構の解説ページ（<a href="method-mst.html">MST</a>・<a href="method-aim.html">AIM</a>・<a href="method-independent.html">INDEPENDENT</a>）と、本レポートの実験結果に基づく<a href="method-selection.html">手法選定ガイド</a>を用意した。</p>
+</blockquote>
 <h3 id="34">3.4 ライブラリとしての位置づけ</h3>
 <blockquote class="badge-note">
 <p>🔎 <strong>考察</strong>（DPSynth には論文が無く、README も公式サポート対象外と明記している。以下はコードとドキュメント構造からの整理であり、推定を含む）。</p>
@@ -681,11 +684,11 @@ flowchart LR
 <li><strong>出力ファイルの場所</strong>: 合成 CSV と指標は <code>outputs/</code>（<code>metrics.json</code>, <code>run_meta.json</code>）、評価図は <code>figures/</code>、レポート HTML は <code>htmls/</code> に生成される。</li>
 </ul>
 <p>実行の最短手順（Linux / WSL2 環境）は次のとおりであり、各ステップの詳細は上記の別ページに記載している。</p>
-<div class="codehilite"><pre><span></span><code>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/gghatano/dpsynth-demo.git
-<span class="nb">cd</span><span class="w"> </span>dpsynth-demo
-bash<span class="w"> </span>scripts/setup_env.sh<span class="w">   </span><span class="c1"># 環境構築（詳細は setup.html）</span>
-bash<span class="w"> </span>scripts/run_all.sh<span class="w">     </span><span class="c1"># データ取得→生成→評価→HTML 生成（詳細は reproduce.html）</span>
-</code></pre></div>
+<pre class="codehilite"><code class="language-bash">git clone https://github.com/gghatano/dpsynth-demo.git
+cd dpsynth-demo
+bash scripts/setup_env.sh   # 環境構築（詳細は setup.html）
+bash scripts/run_all.sh     # データ取得→生成→評価→HTML 生成（詳細は reproduce.html）
+</code></pre>
 
 <hr />
 <h2 id="10">10. 参考文献</h2>

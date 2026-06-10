@@ -64,6 +64,8 @@ DPSynth は次の生成機構をサポートする [\[3\]](#ref3)。本レポー
 
 いずれの機構も、推定エンジンとして **Private-PGM**（[`mbi`](https://github.com/ryan112358/mbi)、測定済みのマージナルと整合する同時分布をグラフィカルモデルとして推定する手法）を共有する [\[10\]](#ref10)。すなわち各機構の違いは「**どのマージナルを、どの予算配分で測定するか**」という戦略の違いとして整理できる。
 
+> 📘 **機構選定に関する注記**: In-Memory API `dpsynth.generate()` の**デフォルト機構は MST** である（`discrete_config` 引数の既定値が `MSTConfig()`）。DPSynth はデータ特性に応じて機構を自動選定する機能を持たないため、**どの機構を採用するかはユーザ自身の責任で判断する必要がある**。選定の考え方は [google/dpsynth 公式ドキュメント](https://github.com/google/dpsynth)に断片的な記載があるのみのため、本サイトでは補足として各機構の解説ページ（[MST](method-mst.html)・[AIM](method-aim.html)・[INDEPENDENT](method-independent.html)）と、本レポートの実験結果に基づく[手法選定ガイド](method-selection.html)を用意した。
+
 ### 3.4 ライブラリとしての位置づけ
 
 > 🔎 **考察**（DPSynth には論文が無く、README も公式サポート対象外と明記している。以下はコードとドキュメント構造からの整理であり、推定を含む）。

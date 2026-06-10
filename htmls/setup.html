@@ -16,7 +16,7 @@ body { font-family: -apple-system, "Segoe UI", "Hiragino Sans", "Yu Gothic UI", 
 .hero h1 { margin: 0 0 .3em; font-size: 1.8rem; border: none; color: #fff; }
 .hero p { margin: .2em 0; opacity: .92; font-size: .94rem; }
 .hero a { color: #ffe; }
-.nav { max-width: 1180px; margin: 16px auto 0; display: flex; gap: 6px; }
+.nav { max-width: 1180px; margin: 16px auto 0; display: flex; gap: 6px; flex-wrap: wrap; }
 .nav a { padding: 9px 18px; border-radius: 8px 8px 0 0; background: rgba(255,255,255,.14);
   color: #fff; text-decoration: none; font-size: .9rem; border: 1px solid rgba(255,255,255,.25);
   border-bottom: none; }
@@ -81,7 +81,7 @@ footer { max-width: 1180px; margin: 0 auto; padding: 24px; color: var(--muted); 
 <header class="hero"><div class="inner">
   <h1>DPSynth 解説・実証デモ</h1>
   <p>実験を再現するための環境構築と依存関係のノート</p>
-</div><nav class="nav"><a href="index.html">📄 レポート</a><a href="experiments.html">🧪 追加実験</a><a href="setup.html" class="active">🛠 環境構築</a><a href="usage.html">🔌 API・CLI</a><a href="reproduce.html">🔁 再現手順</a><a href="engineering-notes.html">🐞 実装ノート</a></nav></header>
+</div><nav class="nav"><a href="index.html">📄 レポート</a><a href="experiments.html">🧪 追加実験</a><a href="method-selection.html">🧭 手法選定</a><a href="method-mst.html">🌲 MST</a><a href="method-aim.html">♻️ AIM</a><a href="method-independent.html">📊 INDEPENDENT</a><a href="setup.html" class="active">🛠 環境構築</a><a href="usage.html">🔌 API・CLI</a><a href="reproduce.html">🔁 再現手順</a><a href="engineering-notes.html">🐞 実装ノート</a></nav></header>
 <div class="layout">
   <nav class="toc"><strong>目次</strong><div class="toc">
 <ul>
@@ -133,10 +133,10 @@ footer { max-width: 1180px; margin: 0 auto; padding: 24px; color: var(--muted); 
 <hr />
 <h2 id="2">2. 一括セットアップ</h2>
 <p>リポジトリ直下で次を実行すると、uv の導入・dpsynth のクローンとパッチ・venv 作成・依存インストールまでを一括で行う。</p>
-<div class="codehilite"><pre><span></span><code>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/gghatano/dpsynth-demo.git
-<span class="nb">cd</span><span class="w"> </span>dpsynth-demo
-bash<span class="w"> </span>scripts/setup_env.sh
-</code></pre></div>
+<pre class="codehilite"><code class="language-bash">git clone https://github.com/gghatano/dpsynth-demo.git
+cd dpsynth-demo
+bash scripts/setup_env.sh
+</code></pre>
 
 <p><code>scripts/setup_env.sh</code> の処理内容は以下のとおり。</p>
 <ol>
@@ -151,9 +151,9 @@ bash<span class="w"> </span>scripts/setup_env.sh
 <h2 id="3">3. 再現性のための依存固定</h2>
 <p><code>setup_env.sh</code> は <a href="https://github.com/gghatano/dpsynth-demo/blob/main/requirements.txt"><code>requirements.txt</code></a> で全推移的依存をバージョン固定してインストールする。
 <code>jax</code> / <code>mbi</code> / <code>numpy</code> 等のバージョン差は乱数列の揺れを生むため、再現性の観点から固定が重要である。<code>mbi</code> はコミットハッシュまで固定している。生成元は Python 3.12.3 / WSL2 である。</p>
-<div class="codehilite"><pre><span></span><code>uv<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>-r<span class="w"> </span>requirements.txt<span class="w">        </span><span class="c1"># 固定依存</span>
-uv<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>--no-deps<span class="w"> </span>./src<span class="w">            </span><span class="c1"># dpsynth 本体（patches 適用済み）</span>
-</code></pre></div>
+<pre class="codehilite"><code class="language-bash">uv pip install -r requirements.txt        # 固定依存
+uv pip install --no-deps ./src            # dpsynth 本体（patches 適用済み）
+</code></pre>
 
 <hr />
 <h2 id="4">4. 上流ライブラリへの対処（手動で行う場合の内訳）</h2>

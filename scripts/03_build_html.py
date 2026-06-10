@@ -4,8 +4,10 @@
 - figures/*.png を base64 で埋め込み、HTML 単体で共有可能にする
 - 目次(TOC)サイドバー + ヒーロー + ページ切替ナビ
 - 出力（htmls/ に集約。直接閲覧と GitHub Pages 公開の両方に使う）:
-    htmls/index.html        … メインレポート（Pages のトップ）
-    htmls/experiments.html  … 追加実験
+    htmls/index.html             … メインレポート（Pages のトップ）
+    htmls/experiments.html       … 追加実験
+    htmls/method-selection.html  … 手法選定ガイド
+    htmls/method-{mst,aim,independent}.html … 各機構の解説
     htmls/.nojekyll
 """
 
@@ -33,6 +35,18 @@ PAGES = [
     {"md": "EXPERIMENTS.md", "out": "experiments.html",
      "subtitle": "本体レポートの発見を深掘りする追加実験（numerical_bins・マルチシード頑健性・2-way 忠実度・MIA）",
      "key": "experiments"},
+    {"md": "method-selection.md", "out": "method-selection.html",
+     "subtitle": "MST / AIM / INDEPENDENT をどう選ぶか — 公式ドキュメントの記述と本デモの実験結果に基づく実践ガイド",
+     "key": "selection"},
+    {"md": "method-mst.md", "out": "method-mst.html",
+     "subtitle": "MST（Maximum Spanning Tree）— ペア相関の最大全域木を DP で選ぶデフォルト機構の解説",
+     "key": "mst"},
+    {"md": "method-aim.md", "out": "method-aim.html",
+     "subtitle": "AIM（Adaptive and Iterative Mechanism）— マージナルを適応的に選択・測定する反復機構の解説",
+     "key": "aim"},
+    {"md": "method-independent.md", "out": "method-independent.html",
+     "subtitle": "INDEPENDENT — 全列を独立にモデル化する最速のベースライン機構の解説",
+     "key": "independent"},
     {"md": "setup.md", "out": "setup.html",
      "subtitle": "実験を再現するための環境構築と依存関係のノート",
      "key": "setup"},
@@ -94,7 +108,9 @@ def rewrite_links(html: str) -> str:
 
     # 同一サイトに存在する HTML ページ（リンク書き換えの対象外）
     local_pages = ("index.html", "experiments.html", "setup.html",
-                   "usage.html", "reproduce.html", "engineering-notes.html")
+                   "usage.html", "reproduce.html", "engineering-notes.html",
+                   "method-selection.html", "method-mst.html",
+                   "method-aim.html", "method-independent.html")
 
     def repl(m: re.Match) -> str:
         href = m.group(1)
@@ -130,7 +146,7 @@ body { font-family: -apple-system, "Segoe UI", "Hiragino Sans", "Yu Gothic UI", 
 .hero h1 { margin: 0 0 .3em; font-size: 1.8rem; border: none; color: #fff; }
 .hero p { margin: .2em 0; opacity: .92; font-size: .94rem; }
 .hero a { color: #ffe; }
-.nav { max-width: 1180px; margin: 16px auto 0; display: flex; gap: 6px; }
+.nav { max-width: 1180px; margin: 16px auto 0; display: flex; gap: 6px; flex-wrap: wrap; }
 .nav a { padding: 9px 18px; border-radius: 8px 8px 0 0; background: rgba(255,255,255,.14);
   color: #fff; text-decoration: none; font-size: .9rem; border: 1px solid rgba(255,255,255,.25);
   border-bottom: none; }
@@ -195,6 +211,10 @@ footer { max-width: 1180px; margin: 0 auto; padding: 24px; color: var(--muted); 
 def build_nav(active_key: str, available: set[str]) -> str:
     items = [("report", "index.html", "📄 レポート"),
              ("experiments", "experiments.html", "🧪 追加実験"),
+             ("selection", "method-selection.html", "🧭 手法選定"),
+             ("mst", "method-mst.html", "🌲 MST"),
+             ("aim", "method-aim.html", "♻️ AIM"),
+             ("independent", "method-independent.html", "📊 INDEPENDENT"),
              ("setup", "setup.html", "🛠 環境構築"),
              ("usage", "usage.html", "🔌 API・CLI"),
              ("reproduce", "reproduce.html", "🔁 再現手順"),

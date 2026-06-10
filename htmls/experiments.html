@@ -16,7 +16,7 @@ body { font-family: -apple-system, "Segoe UI", "Hiragino Sans", "Yu Gothic UI", 
 .hero h1 { margin: 0 0 .3em; font-size: 1.8rem; border: none; color: #fff; }
 .hero p { margin: .2em 0; opacity: .92; font-size: .94rem; }
 .hero a { color: #ffe; }
-.nav { max-width: 1180px; margin: 16px auto 0; display: flex; gap: 6px; }
+.nav { max-width: 1180px; margin: 16px auto 0; display: flex; gap: 6px; flex-wrap: wrap; }
 .nav a { padding: 9px 18px; border-radius: 8px 8px 0 0; background: rgba(255,255,255,.14);
   color: #fff; text-decoration: none; font-size: .9rem; border: 1px solid rgba(255,255,255,.25);
   border-bottom: none; }
@@ -81,7 +81,7 @@ footer { max-width: 1180px; margin: 0 auto; padding: 24px; color: var(--muted); 
 <header class="hero"><div class="inner">
   <h1>DPSynth 解説・実証デモ</h1>
   <p>本体レポートの発見を深掘りする追加実験（numerical_bins・マルチシード頑健性・2-way 忠実度・MIA）</p>
-</div><nav class="nav"><a href="index.html">📄 レポート</a><a href="experiments.html" class="active">🧪 追加実験</a><a href="setup.html">🛠 環境構築</a><a href="usage.html">🔌 API・CLI</a><a href="reproduce.html">🔁 再現手順</a><a href="engineering-notes.html">🐞 実装ノート</a></nav></header>
+</div><nav class="nav"><a href="index.html">📄 レポート</a><a href="experiments.html" class="active">🧪 追加実験</a><a href="method-selection.html">🧭 手法選定</a><a href="method-mst.html">🌲 MST</a><a href="method-aim.html">♻️ AIM</a><a href="method-independent.html">📊 INDEPENDENT</a><a href="setup.html">🛠 環境構築</a><a href="usage.html">🔌 API・CLI</a><a href="reproduce.html">🔁 再現手順</a><a href="engineering-notes.html">🐞 実装ノート</a></nav></header>
 <div class="layout">
   <nav class="toc"><strong>目次</strong><div class="toc">
 <ul>

@@ -1,4 +1,4 @@
-"""REPORT.md / EXPERIMENTS.md を自己完結型 HTML に変換し、GitHub Pages サイトを生成する。
+"""content/*.md（REPORT.md ほか）を自己完結型 HTML に変換し、GitHub Pages サイトを生成する。
 
 - 表・コードブロック・見出しアンカーに対応
 - figures/*.png を base64 で埋め込み、HTML 単体で共有可能にする
@@ -21,6 +21,7 @@ from pathlib import Path
 import markdown
 
 ROOT = Path(__file__).resolve().parent.parent
+CONTENT = ROOT / "content"  # 公開ページの Markdown ソース
 OUTDIR = ROOT / "htmls"
 
 REPO_URL = "https://github.com/gghatano/dpsynth-demo"
@@ -237,7 +238,7 @@ MERMAID_JS = """
 
 
 def render(page: dict, available: set[str]) -> str:
-    md_text = embed_images((ROOT / page["md"]).read_text(encoding="utf-8"))
+    md_text = embed_images((CONTENT / page["md"]).read_text(encoding="utf-8"))
     md_text, mermaid_blocks = extract_mermaid(md_text)
     md = markdown.Markdown(
         extensions=["tables", "fenced_code", "toc", "codehilite", "sane_lists"],
@@ -273,7 +274,7 @@ def render(page: dict, available: set[str]) -> str:
 
 
 def main() -> None:
-    pages = [p for p in PAGES if (ROOT / p["md"]).exists()]
+    pages = [p for p in PAGES if (CONTENT / p["md"]).exists()]
     available = {p["key"] for p in pages}
     if OUTDIR.exists():
         shutil.rmtree(OUTDIR)

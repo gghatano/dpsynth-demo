@@ -1,18 +1,13 @@
 name: Deploy report to GitHub Pages
 
-# REPORT.md と figures/ から自己完結型 HTML を生成し、GitHub Pages に公開する。
+# content/ の Markdown と figures/ から自己完結型 HTML を生成し、GitHub Pages に公開する。
 # DP 合成データの再生成は不要（重い依存は使わず、markdown だけでビルド）。
 
 on:
   push:
     branches: [main]
     paths:
-      - "REPORT.md"
-      - "EXPERIMENTS.md"
-      - "setup.md"
-      - "usage.md"
-      - "reproduce.md"
-      - "engineering-notes.md"
+      - "content/**"
       - "figures/**"
       - "scripts/03_build_html.py"
       - ".github/workflows/deploy-pages.yml"

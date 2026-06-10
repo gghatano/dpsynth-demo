@@ -6,16 +6,18 @@
 > **⚠️ スコープ**: 本デモ・実験は **In-Memory DataFrame API(`dpsynth.generate`、単一マシン・Pandas)のみ**を対象とします。
 > **Apache Beam を用いた Scalable Pipeline API(分散処理)は対象外**です(機能紹介はしますが実行・評価はしていません)。
 
-- 実証評価レポート本体（論文調・10 章構成）→ **[REPORT.md](REPORT.md)** / 公開サイト **https://gghatano.github.io/dpsynth-demo/**
+公開ページの Markdown ソースは **`content/`** に集約しています（`scripts/03_build_html.py` が `htmls/` を生成）。
+
+- 実証評価レポート本体（論文調・10 章構成）→ **[content/REPORT.md](content/REPORT.md)** / 公開サイト **https://gghatano.github.io/dpsynth-demo/**
 - 手法（生成機構）の解説と選定ガイド:
-  - 手法選定ガイド（MST / AIM / INDEPENDENT の使い分け）→ **[method-selection.md](method-selection.md)**
-  - 各機構の解説 → **[method-mst.md](method-mst.md)** / **[method-aim.md](method-aim.md)** / **[method-independent.md](method-independent.md)**
+  - 手法選定ガイド（MST / AIM / INDEPENDENT の使い分け）→ **[content/method-selection.md](content/method-selection.md)**
+  - 各機構の解説 → **[content/method-mst.md](content/method-mst.md)** / **[content/method-aim.md](content/method-aim.md)** / **[content/method-independent.md](content/method-independent.md)**
 - エンジニアリング情報は本体から分離し、別ページに集約:
-  - 環境構築・依存関係 → **[setup.md](setup.md)**
-  - API・CLI 利用方法 → **[usage.md](usage.md)**
-  - 実験再現手順 → **[reproduce.md](reproduce.md)**
-  - 実装上の問題と対応 → **[engineering-notes.md](engineering-notes.md)**
-  - 追加実験 → **[EXPERIMENTS.md](EXPERIMENTS.md)**
+  - 環境構築・依存関係 → **[content/setup.md](content/setup.md)**
+  - API・CLI 利用方法 → **[content/usage.md](content/usage.md)**
+  - 実験再現手順 → **[content/reproduce.md](content/reproduce.md)**
+  - 実装上の問題と対応 → **[content/engineering-notes.md](content/engineering-notes.md)**
+  - 追加実験 → **[content/EXPERIMENTS.md](content/EXPERIMENTS.md)**
 
 ## クイックスタート（clone してコマンド実行で再現）
 
@@ -48,16 +50,17 @@ bash scripts/run_all.sh     # データ取得 → DP 合成生成 → 評価 →
 ```
 dpsynth-demo/
 ├── README.md                  … 本ファイル（再現手順）
-├── REPORT.md                  … 実証評価レポート本体（論文調・10 章構成, Markdown）
-├── EXPERIMENTS.md             … 追加実験（numerical_bins・マルチシード・2-way・MIA）
-├── method-selection.md        … 手法選定ガイド（MST/AIM/INDEPENDENT の使い分け）
-├── method-mst.md              … MST 機構の解説（デフォルト機構）
-├── method-aim.md              … AIM 機構の解説
-├── method-independent.md      … INDEPENDENT 機構の解説
-├── setup.md                   … 環境構築と依存関係（本体から分離）
-├── usage.md                   … API・CLI 利用方法・処理ライフサイクル（本体から分離）
-├── reproduce.md               … 実験再現手順（本体から分離）
-├── engineering-notes.md       … 実装時の問題と対応（本体から分離）
+├── content/                    … 公開ページの Markdown ソース（htmls/ のビルド元）
+│   ├── REPORT.md              … 実証評価レポート本体（論文調・10 章構成, Markdown）
+│   ├── EXPERIMENTS.md         … 追加実験（numerical_bins・マルチシード・2-way・MIA）
+│   ├── method-selection.md    … 手法選定ガイド（MST/AIM/INDEPENDENT の使い分け）
+│   ├── method-mst.md          … MST 機構の解説（デフォルト機構）
+│   ├── method-aim.md          … AIM 機構の解説
+│   ├── method-independent.md  … INDEPENDENT 機構の解説
+│   ├── setup.md               … 環境構築と依存関係（本体から分離）
+│   ├── usage.md               … API・CLI 利用方法・処理ライフサイクル（本体から分離）
+│   ├── reproduce.md           … 実験再現手順（本体から分離）
+│   └── engineering-notes.md   … 実装時の問題と対応（本体から分離）
 ├── htmls/                      … ビルド済み HTML（Pages 公開元・直接閲覧用）
 │   ├── index.html             …   レポート本体（Pages のトップ）
 │   ├── experiments.html       …   追加実験
@@ -74,10 +77,10 @@ dpsynth-demo/
 │   ├── 02_evaluate.py         … 1-way TVD / 相関誤差 / TSTR で品質評価し図を出力
 │   ├── 10_experiments.py      … 追加実験 A/B/C を実行し図を出力
 │   ├── 11_mia.py              … 追加実験D（メンバーシップ推論攻撃 MIA）
-│   ├── 03_build_html.py       … REPORT/EXPERIMENTS → htmls/ に自己完結HTMLを生成（Pages公開元）
+│   ├── 03_build_html.py       … content/*.md → htmls/ に自己完結HTMLを生成（Pages公開元）
 │   └── create_issues.sh       … docs/BACKLOG.md を GitHub Issue に一括登録（要 gh 認証）
 ├── patches/                   … dpsynth への最小修正パッチ（INDEPENDENT 機構の重複クリーク対策）
-├── docs/BACKLOG.md            … 今後の課題（Issue 化候補）
+├── docs/BACKLOG.md            … 今後の課題（Issue 化候補・開発知見）
 ├── data/                      … 入力データ（自動取得、git 管理外）
 ├── outputs/ figures/ experiments/ … 合成 CSV・指標・評価図
 └── src/                       … dpsynth のクローン（setup_env.sh が取得・パッチ。git 管理外）

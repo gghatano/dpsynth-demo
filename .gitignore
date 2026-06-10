@@ -6,8 +6,8 @@ __pycache__/
 # ビルド成果物（旧構成。現在は htmls/ に集約し、htmls/ は追跡する）
 _site/
 
-# ローカル設定
-.claude/
+# ローカル設定（.claude/ の規約・スキルは追跡する）
+.claude/settings.local.json
 
 # 第三者クローン（README の手順で取得・パッチ。patches/ に差分を保存）
 src/

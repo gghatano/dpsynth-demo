@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DPSynth 解説・デモレポート</title>
+<style>
+:root { --fg:#1a1a1a; --muted:#666; --accent:#c0392b; --line:#e3e3e3; --bg:#fff;
+  --code:#f6f8fa; --sidebar:#fbfbfc; }
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { font-family: -apple-system, "Segoe UI", "Hiragino Sans", "Yu Gothic UI", "Meiryo", sans-serif;
+  color: var(--fg); background: #f3f4f6; line-height: 1.85; margin: 0; }
+.hero { background: linear-gradient(135deg, #2c3e50 0%, #c0392b 130%); color: #fff; padding: 36px 24px 0; }
+.hero .inner { max-width: 1180px; margin: 0 auto; }
+.hero h1 { margin: 0 0 .3em; font-size: 1.8rem; border: none; color: #fff; }
+.hero p { margin: .2em 0; opacity: .92; font-size: .94rem; }
+.hero a { color: #ffe; }
+.nav { max-width: 1180px; margin: 16px auto 0; display: flex; gap: 6px; flex-wrap: wrap; }
+.nav a { padding: 9px 18px; border-radius: 8px 8px 0 0; background: rgba(255,255,255,.14);
+  color: #fff; text-decoration: none; font-size: .9rem; border: 1px solid rgba(255,255,255,.25);
+  border-bottom: none; }
+.nav a.active { background: #f3f4f6; color: #c0392b; font-weight: 600; }
+.nav a:hover:not(.active) { background: rgba(255,255,255,.26); }
+.layout { max-width: 1180px; margin: 0 auto; display: grid;
+  grid-template-columns: 250px 1fr; gap: 32px; padding: 24px 24px 96px; }
+nav.toc { position: sticky; top: 18px; align-self: start; max-height: calc(100vh - 36px);
+  overflow-y: auto; background: var(--sidebar); border: 1px solid var(--line);
+  border-radius: 10px; padding: 14px 16px; font-size: .86rem; }
+nav.toc strong { display: block; margin-bottom: 8px; color: var(--accent); }
+nav.toc ul { list-style: none; padding-left: 0; margin: 0; }
+nav.toc ul ul { padding-left: 12px; }
+nav.toc li { margin: 3px 0; }
+nav.toc a { color: #34495e; text-decoration: none; display: block; padding: 2px 0; }
+nav.toc a:hover { color: var(--accent); }
+article { background: var(--bg); border: 1px solid var(--line); border-radius: 10px;
+  padding: 12px 40px 56px; box-shadow: 0 1px 10px rgba(0,0,0,.04); min-width: 0; }
+article > h1:first-of-type { display: none; }
+h2 { font-size: 1.45rem; margin-top: 2.2em; border-bottom: 1px solid var(--line);
+  padding-bottom: .3em; scroll-margin-top: 16px; }
+h3 { font-size: 1.16rem; margin-top: 1.7em; color: #222; scroll-margin-top: 16px; }
+h4 { font-size: 1.0rem; margin-top: 1.3em; color: var(--accent); }
+a { color: #1565c0; text-decoration: none; } a:hover { text-decoration: underline; }
+/* 出典タグ [n]（href="#refN"）を小さな上付きチップに */
+a[href^="#ref"] { font-size: .72em; vertical-align: super; line-height: 0; color: #1565c0;
+  background: #eef4fb; border: 1px solid #cfe0f3; border-radius: 4px; padding: 0 4px;
+  margin: 0 1px; text-decoration: none; white-space: nowrap; }
+a[href^="#ref"]:hover { background: #d7e8fb; text-decoration: none; }
+/* 出典リスト本体（付録C）のアンカー位置調整 */
+:target { scroll-margin-top: 18px; }
+code { background: var(--code); padding: .15em .4em; border-radius: 4px; font-size: .88em;
+  font-family: "Cascadia Code", Consolas, "SF Mono", monospace; }
+pre { background: var(--code); padding: 15px 18px; border-radius: 8px; overflow-x: auto;
+  border: 1px solid var(--line); }
+pre code { background: none; padding: 0; }
+table { border-collapse: collapse; width: 100%; margin: 1.2em 0; font-size: .9rem; display: block;
+  overflow-x: auto; }
+th, td { border: 1px solid var(--line); padding: 8px 11px; text-align: left; white-space: nowrap; }
+th { background: #f2f4f7; font-weight: 600; }
+tr:nth-child(even) td { background: #fbfbfc; }
+img { max-width: 100%; height: auto; display: block; margin: 1.2em auto; border: 1px solid var(--line);
+  border-radius: 8px; }
+.mermaid { background: #fff; border: 1px solid var(--line); border-radius: 8px;
+  padding: 14px; margin: 1.4em 0; text-align: center; overflow-x: auto; }
+blockquote { border-left: 4px solid var(--accent); margin: 1.2em 0; padding: .4em 1.2em;
+  background: #fdf3f2; color: #444; border-radius: 0 6px 6px 0; }
+blockquote.badge-doc { border-left-color: #1565c0; background: #eef4fb; color: #21303f; }
+blockquote.badge-note { border-left-color: #b9770e; background: #fdf6e9; color: #3a2e12; }
+blockquote.badge-legend { border-left-color: #607d8b; background: #eef1f3; color: #243; }
+hr { border: none; border-top: 1px solid var(--line); margin: 2.2em 0; }
+footer { max-width: 1180px; margin: 0 auto; padding: 24px; color: var(--muted); font-size: .85rem;
+  text-align: center; }
+@media (max-width: 860px) {
+  .layout { grid-template-columns: 1fr; }
+  nav.toc { position: static; max-height: none; }
+  article { padding: 12px 20px 40px; }
+}
+</style>
+</head>
+<body>
+<header class="hero"><div class="inner">
+  <h1>DPSynth 解説・実証デモ</h1>
+  <p>Private-PGM（mbi）— MST / AIM / INDEPENDENT が共有する、測定済みマージナルから同時分布を推定する共通エンジンの解説</p>
+</div><nav class="nav"><a href="index.html">📄 レポート</a><a href="experiments.html">🧪 追加実験</a><a href="method-selection.html">🧭 手法選定</a><a href="method-mst.html">🌲 MST</a><a href="method-aim.html">♻️ AIM</a><a href="method-independent.html">📊 INDEPENDENT</a><a href="method-pgm.html" class="active">🧩 Private-PGM</a><a href="setup.html">🛠 環境構築</a><a href="usage.html">🔌 API・CLI</a><a href="reproduce.html">🔁 再現手順</a><a href="engineering-notes.html">🐞 実装ノート</a></nav></header>
+<div class="layout">
+  <nav class="toc"><strong>目次</strong><div class="toc">
+<ul>
+<li><a href="#1-3">1. 位置づけ — 3 機構が共有する「推定エンジン」</a></li>
+<li><a href="#2">2. 何を解いているのか — 測定値と整合する最尤分布</a></li>
+<li><a href="#3">3. 同時分布をどう表すか — グラフィカルモデル（マルコフ確率場）</a><ul>
+<li><a href="#junction-tree">モデルサイズ（junction tree）と計算量</a></li>
+</ul>
+</li>
+<li><a href="#4-mirror-descent">4. どう推定するか — mirror descent とウォームスタート</a></li>
+<li><a href="#5-private-pgm">5. 各機構は「何を」Private-PGM に渡すか</a></li>
+<li><a href="#6-dpsynth">6. DPSynth における利用</a></li>
+<li><a href="#7">7. 参考リンク</a></li>
+</ul>
+</div>
+</nav>
+  <article><h1 id="private-pgm-mbi">Private-PGM の解説（共有推定エンジン <code>mbi</code>）</h1>
+<p><a href="method-selection.html">手法選定ガイド</a> ｜ <a href="method-mst.html">MST の解説</a> ｜ <a href="method-aim.html">AIM の解説</a> ｜ <a href="method-independent.html">INDEPENDENT の解説</a> ｜ <a href="index.html">メインレポート</a></p>
+<blockquote class="badge-doc">
+<p>📘 本ページのアルゴリズム・実装の記述は、原論文 <a href="https://arxiv.org/abs/1901.09136">arXiv:1901.09136</a>（ICML 2019）と
+参照実装 <a href="https://github.com/ryan112358/mbi"><code>mbi</code>（ryan112358/mbi）</a>、および
+<a href="https://github.com/google/dpsynth">google/dpsynth</a> が推定エンジンとしてこれを利用している事実に基づく。
+本ページにはデモ固有の実測値は含まない（実測は各機構ページの 🔎 節を参照）。</p>
+</blockquote>
+<hr />
+<h2 id="1-3">1. 位置づけ — 3 機構が共有する「推定エンジン」</h2>
+<p><strong>Private-PGM（Private Probabilistic Graphical Model、参照実装は <code>mbi</code> = <em>marginal-based inference</em>）</strong>は、
+<strong>ノイズを加えて測定したマージナル群と整合する同時分布を推定する手法</strong>である <a href="https://arxiv.org/abs/1901.09136">arXiv:1901.09136</a>。</p>
+<p>DPSynth の MST・AIM・INDEPENDENT は、いずれも</p>
+<ol>
+<li><strong>どのマージナルを、どの予算で測定するか</strong>を決める（＝機構ごとに異なる「測定戦略」）</li>
+<li>ノイズ付きで測定する（ガウス機構）</li>
+<li><strong>測定値と整合する同時分布を推定する（＝この Private-PGM。3 機構で共通）</strong></li>
+<li>推定した分布からサンプリングする</li>
+</ol>
+<p>という共通のパイプライン（SELECT-MEASURE-<strong>GENERATE</strong>）の上に立っている。
+つまり <strong>3 機構の違いは①の測定戦略だけ</strong>であり、③の推定エンジンは同一である。
+本ページはこの③を解説する。各機構が Private-PGM に「何を」渡すかは <a href="#5-private-pgm">§5</a> にまとめた。</p>
+<blockquote class="badge-note">
+<p>🔎 機構が異なってもサンプリングの土台（同時分布の表現とその推定法）が同じであることは、
+「機構間の差は測定するマージナルの選び方に帰着する」という本デモの整理（<a href="index.html">メインレポート §3.3</a>）の根拠でもある。</p>
+</blockquote>
+<h2 id="2">2. 何を解いているのか — 測定値と整合する最尤分布</h2>
+<p>DP 機構が出力するのは、いくつかの属性部分集合 <code>S_1, S_2, …</code> について測定した
+<strong>ノイズ付きマージナル</strong> <code>ỹ_1, ỹ_2, …</code> である。これらは</p>
+<ul>
+<li>ノイズのため<strong>非負でない</strong>セルを含みうる、</li>
+<li>同じ属性を共有する別々の測定どうしで<strong>辻褄が合わない</strong>（例: <code>education</code> 単独の度数と
+  <code>education×income</code> の周辺和が一致しない）、</li>
+</ul>
+<p>という性質を持つ。素朴に各マージナルをそのまま使うと矛盾した合成データになる。</p>
+<p>Private-PGM は、これらの測定値に最もよく合致する<strong>ひとつの同時分布</strong> <code>p</code> を、
+測定の負対数尤度（ガウスノイズ前提では重み付き二乗誤差）</p>
+<div class="codehilite"><pre><span></span><code>minimize over p (確率分布)   Σ_k || M_k · p − ỹ_k ||²
+</code></pre></div>
+
+<p>を最小化する形で推定する。ここで <code>M_k</code> は同時分布 <code>p</code> から部分集合 <code>S_k</code> のマージナルを取り出す線形作用素、
+<code>ỹ_k</code> はそのノイズ付き測定値である。こうして得た<strong>単一の分布</strong>からサンプリングするため、
+出力は<strong>すべての測定と整合し、非負・総和 1 を満たす</strong>。</p>
+<h2 id="3">3. 同時分布をどう表すか — グラフィカルモデル（マルコフ確率場）</h2>
+<p>属性が 9 列あれば、同時分布をセルごとに陽に持つと
+（各列のカーディナリティの積だけ）爆発する。Private-PGM はこれを
+<strong>マルコフ確率場（Markov Random Field, MRF）= グラフィカルモデル</strong>として表現する。</p>
+<ul>
+<li>測定した各マージナル <code>S_k</code> を MRF の<strong>クリーク（factor）</strong>として持つ。</li>
+<li>同時分布は各クリークのポテンシャル（指数族のパラメータ <code>θ</code>）の積に比例する形
+  <code>p_θ(x) ∝ exp( Σ_k θ_k(x_{S_k}) )</code> で表す。</li>
+<li><strong>測定したマージナルに現れない高次の相互作用はモデルに入らない</strong>ため、表現はコンパクトになる。</li>
+</ul>
+<p>この MRF は、<strong>測定したクリークの集合から定まる graphical structure（junction tree）</strong>に対応する。
+INDEPENDENT のようにクリークが 1-way だけならグラフは辺を持たず分布は積（＝独立）になり、
+MST なら木、AIM なら木とは限らない（同じ属性に複数の依存が張れる）グラフになる。</p>
+<h3 id="junction-tree">モデルサイズ（junction tree）と計算量</h3>
+<p>推論のコストは、MRF を三角化して得る <strong>junction tree の最大クリークのサイズ（含まれる属性のカーディナリティの積）</strong>で決まる。
+高次・高カーディナリティのマージナルを多数測ると junction tree が巨大化し、推定が指数的に重くなる。
+そのため各機構は測定するマージナルにサイズ上限を設けている
+（AIM の <code>max_model_size</code>／<code>max_marginal_size</code>、MST の <code>maximum_marginal_size</code>）。
+<strong>「どこまで複雑な依存を保持できるか」は、この推定側の許容サイズと表裏一体</strong>である。</p>
+<h2 id="4-mirror-descent">4. どう推定するか — mirror descent とウォームスタート</h2>
+<p>§2 の最小化問題を、Private-PGM は <strong>mirror descent（ミラー降下法）</strong>で解く。</p>
+<ul>
+<li>パラメータ <code>θ</code> について、目的関数の勾配を計算し、指数族の幾何に沿って更新する。
+  各反復で現在の <code>θ</code> から<strong>周辺分布を求める推論（marginal inference）</strong>を junction tree 上で行い、
+  測定値とのズレ（<code>M_k · p_θ − ỹ_k</code>）を勾配として <code>θ</code> を動かす。</li>
+<li>反復回数は実装上のパラメータ（DPSynth では <code>pgm_iters</code>。MST/INDEPENDENT 既定 5000、AIM 既定 1000）で、
+  多いほど測定値への当てはめは進むが時間がかかる。</li>
+</ul>
+<p><strong>ウォームスタート（warm start）</strong>は、AIM のように<strong>反復的にマージナルを追加測定する</strong>機構で効く。
+新しいマージナルを 1 つ測るたびに推定をゼロからやり直すのではなく、
+<strong>直前ラウンドの <code>θ</code> を初期値</strong>として追加測定ぶんだけ調整する。これにより</p>
+<ul>
+<li>ラウンドごとの推定が高速化し、</li>
+<li>AIM のような「測って→推定して→次に測るマージナルを選ぶ」反復が現実的な時間で回る。</li>
+</ul>
+<blockquote class="badge-note">
+<p>🔎 AIM が「反復のたびに Private-PGM の再推定が走るため MST より重い」（<a href="method-aim.html">AIM 解説 §5</a>）のは、
+ウォームスタートを使ってもなおラウンド数ぶんの推定が積み上がるためである。
+一方 MST・INDEPENDENT は測定が一度きりなので推定も 1 回で済む。</p>
+</blockquote>
+<h2 id="5-private-pgm">5. 各機構は「何を」Private-PGM に渡すか</h2>
+<p>推定エンジンは共通でも、入力として渡される<strong>測定済みマージナルの集合</strong>が機構ごとに異なり、
+それが MRF の構造（＝保持できる依存関係）を決める。</p>
+<table>
+<thead>
+<tr>
+<th>機構</th>
+<th>Private-PGM に渡す測定マージナル</th>
+<th>結果として推定される構造</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="method-independent.html">INDEPENDENT</a></td>
+<td>全列の 1-way のみ</td>
+<td>辺なし。同時分布は周辺分布の積（＝独立）</td>
+</tr>
+<tr>
+<td><a href="method-mst.html">MST</a></td>
+<td>全列の 1-way ＋ 最大全域木に選ばれた d−1 本の 2-way</td>
+<td>木構造（off-tree のペアは独立扱い）</td>
+</tr>
+<tr>
+<td><a href="method-aim.html">AIM</a></td>
+<td>1-way ＋ 各ラウンドで適応選択した 1〜3-way（木に限らない）</td>
+<td>木とは限らない MRF（同属性に複数依存・3-way も可）</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>INDEPENDENT で「列間相関が一切保持されない」のも、MST で「木から外れたペアが崩れる」のも、
+  <strong>推定エンジンの違いではなく、渡されるマージナルの違い</strong>から生じる。
+  各機構ページの「得意・苦手」は、突き詰めれば<strong>この入力集合の違い</strong>に帰着する。</li>
+<li>AIM がラウンドごとに測定を追加できるのは、§4 のウォームスタート付き推定が前提にある。</li>
+</ul>
+<h2 id="6-dpsynth">6. DPSynth における利用</h2>
+<ul>
+<li>DPSynth は Private-PGM のアルゴリズムを <code>pipeline_dp</code> の処理系の上で利用し、
+  生データの離散化・ドメイン発見から復号までを含む end-to-end の処理に組み込んでいる
+  （<a href="index.html">メインレポート §3.4</a> のライブラリ位置づけを参照）。</li>
+<li>推定の反復回数は各 <code>*Config</code> の <code>pgm_iters</code> で制御できる。
+  本デモの設定値は各機構ページの「主なパラメータ」節に記載している。</li>
+<li>Private-PGM 自体は <strong>DP の予算を消費しない</strong>。差分プライバシーは①測定（ガウス機構）・選定（指数機構）の段で成立し、
+  推定はそのノイズ付き測定値だけを入力とする<strong>後処理（post-processing）</strong>であるため、
+  DP の後処理不変性により追加の予算を要しない。</li>
+</ul>
+<h2 id="7">7. 参考リンク</h2>
+<ul>
+<li>原論文: McKenna, Sheldon, Miklau, <em>Graphical-model based estimation and inference for differential privacy</em>, ICML 2019 — <a href="https://arxiv.org/abs/1901.09136">arXiv:1901.09136</a></li>
+<li>参照実装: <a href="https://github.com/ryan112358/mbi">Private-PGM / <code>mbi</code>（ryan112358/mbi）</a></li>
+<li>利用元ライブラリ: <a href="https://github.com/google/dpsynth">google/dpsynth</a>（README「Supported Synthesis Algorithms」で各機構の推定基盤として参照）</li>
+<li>各機構がこのエンジンに渡す測定戦略: <a href="method-mst.html">MST</a> ／ <a href="method-aim.html">AIM</a> ／ <a href="method-independent.html">INDEPENDENT</a></li>
+</ul>
+<hr />
+<p>← <a href="method-selection.html">手法選定ガイドに戻る</a></p></article>
+</div>
+<footer>
+  Source: <a href="https://github.com/gghatano/dpsynth-demo">https://github.com/gghatano/dpsynth-demo</a> · Upstream: <a href="https://github.com/google/dpsynth">google/dpsynth</a>
+</footer>
+
+</body>
+</html>

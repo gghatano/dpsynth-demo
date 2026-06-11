@@ -81,7 +81,7 @@ footer { max-width: 1180px; margin: 0 auto; padding: 24px; color: var(--muted); 
 <header class="hero"><div class="inner">
   <h1>DPSynth 解説・実証デモ</h1>
   <p>MST / AIM / INDEPENDENT をどう選ぶか — 公式ドキュメントの記述と本デモの実験結果に基づく実践ガイド</p>
-</div><nav class="nav"><a href="index.html">📄 レポート</a><a href="experiments.html">🧪 追加実験</a><a href="method-selection.html" class="active">🧭 手法選定</a><a href="method-mst.html">🌲 MST</a><a href="method-aim.html">♻️ AIM</a><a href="method-independent.html">📊 INDEPENDENT</a><a href="setup.html">🛠 環境構築</a><a href="usage.html">🔌 API・CLI</a><a href="reproduce.html">🔁 再現手順</a><a href="engineering-notes.html">🐞 実装ノート</a></nav></header>
+</div><nav class="nav"><a href="index.html">📄 レポート</a><a href="experiments.html">🧪 追加実験</a><a href="method-selection.html" class="active">🧭 手法選定</a><a href="method-mst.html">🌲 MST</a><a href="method-aim.html">♻️ AIM</a><a href="method-independent.html">📊 INDEPENDENT</a><a href="method-pgm.html">🧩 Private-PGM</a><a href="setup.html">🛠 環境構築</a><a href="usage.html">🔌 API・CLI</a><a href="reproduce.html">🔁 再現手順</a><a href="engineering-notes.html">🐞 実装ノート</a></nav></header>
 <div class="layout">
   <nav class="toc"><strong>目次</strong><div class="toc">
 <ul>
@@ -102,7 +102,7 @@ footer { max-width: 1180px; margin: 0 auto; padding: 24px; color: var(--muted); 
 </div>
 </nav>
   <article><h1 id="mst-aim-independent">手法選定ガイド: MST / AIM / INDEPENDENT をどう選ぶか</h1>
-<p>各機構の詳細: <a href="method-mst.html">MST</a> ｜ <a href="method-aim.html">AIM</a> ｜ <a href="method-independent.html">INDEPENDENT</a> ｜ <a href="index.html">メインレポート</a></p>
+<p>各機構の詳細: <a href="method-mst.html">MST</a> ｜ <a href="method-aim.html">AIM</a> ｜ <a href="method-independent.html">INDEPENDENT</a> ｜ <a href="method-pgm.html">Private-PGM（共有推定エンジン）</a> ｜ <a href="index.html">メインレポート</a></p>
 <blockquote>
 <p>⚠️ <strong>免責</strong>: DPSynth は機構を自動選定しない。<strong>どの機構を採用するか、またプライバシー予算
 （ε, δ）が要件を満たすかの最終判断は、利用者自身の責任</strong>である。本ページは
@@ -293,7 +293,7 @@ flowchart TD
 <li>本デモの根拠データ: <a href="index.html">メインレポート §5（結果）・§8（考察）</a> ／ <a href="experiments.html">追加実験 A〜D</a></li>
 </ul>
 <hr />
-<p>各機構の詳細: <a href="method-mst.html">MST の解説</a> ｜ <a href="method-aim.html">AIM の解説</a> ｜ <a href="method-independent.html">INDEPENDENT の解説</a></p></article>
+<p>各機構の詳細: <a href="method-mst.html">MST の解説</a> ｜ <a href="method-aim.html">AIM の解説</a> ｜ <a href="method-independent.html">INDEPENDENT の解説</a> ｜ <a href="method-pgm.html">Private-PGM の解説</a></p></article>
 </div>
 <footer>
   Source: <a href="https://github.com/gghatano/dpsynth-demo">https://github.com/gghatano/dpsynth-demo</a> · Upstream: <a href="https://github.com/google/dpsynth">google/dpsynth</a>

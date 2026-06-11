@@ -12,6 +12,7 @@
 - 手法（生成機構）の解説と選定ガイド:
   - 手法選定ガイド（MST / AIM / INDEPENDENT の使い分け）→ **[content/method-selection.md](content/method-selection.md)**
   - 各機構の解説 → **[content/method-mst.md](content/method-mst.md)** / **[content/method-aim.md](content/method-aim.md)** / **[content/method-independent.md](content/method-independent.md)**
+  - 共有推定エンジンの解説（MST/AIM/INDEPENDENT が使う Private-PGM）→ **[content/method-pgm.md](content/method-pgm.md)**
 - エンジニアリング情報は本体から分離し、別ページに集約:
   - 環境構築・依存関係 → **[content/setup.md](content/setup.md)**
   - API・CLI 利用方法 → **[content/usage.md](content/usage.md)**
@@ -57,6 +58,7 @@ dpsynth-demo/
 │   ├── method-mst.md          … MST 機構の解説（デフォルト機構）
 │   ├── method-aim.md          … AIM 機構の解説
 │   ├── method-independent.md  … INDEPENDENT 機構の解説
+│   ├── method-pgm.md          … Private-PGM（mbi）共有推定エンジンの解説
 │   ├── setup.md               … 環境構築と依存関係（本体から分離）
 │   ├── usage.md               … API・CLI 利用方法・処理ライフサイクル（本体から分離）
 │   ├── reproduce.md           … 実験再現手順（本体から分離）
@@ -64,8 +66,8 @@ dpsynth-demo/
 ├── htmls/                      … ビルド済み HTML（Pages 公開元・直接閲覧用）
 │   ├── index.html             …   レポート本体（Pages のトップ）
 │   ├── experiments.html       …   追加実験
-│   ├── method-selection.html / method-mst.html / method-aim.html / method-independent.html
-│   │                          …   手法選定ガイドと各機構の解説ページ
+│   ├── method-selection.html / method-mst.html / method-aim.html / method-independent.html / method-pgm.html
+│   │                          …   手法選定ガイド・各機構の解説・共有推定エンジン Private-PGM の解説
 │   ├── setup.html / usage.html / reproduce.html / engineering-notes.html
 │   │                          …   分離したエンジニアリング各ページ
 ├── requirements.txt           … 全依存をバージョン固定したロックファイル（再現性の要）

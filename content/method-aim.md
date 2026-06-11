@@ -1,6 +1,6 @@
 # AIM 機構の解説（Adaptive and Iterative Mechanism）
 
-[手法選定ガイド](method-selection.html) ｜ [MST の解説](method-mst.html) ｜ [INDEPENDENT の解説](method-independent.html) ｜ [メインレポート](index.html)
+[手法選定ガイド](method-selection.html) ｜ [MST の解説](method-mst.html) ｜ [INDEPENDENT の解説](method-independent.html) ｜ [Private-PGM の解説](method-pgm.html) ｜ [メインレポート](index.html)
 
 > 📘 本ページのアルゴリズム・実装の記述は、原論文 [arXiv:2201.12677](https://arxiv.org/abs/2201.12677) と
 > [google/dpsynth](https://github.com/google/dpsynth) のソースコード（`dpsynth/discrete_mechanisms/aim.py`、2026-06 時点の main ブランチ）に基づく。
@@ -104,8 +104,77 @@ flowchart TD
 - **2-way 忠実度（[追加実験C](experiments.html)）**: **全属性ペアで最良**（TVD 0.03〜0.15）。
   `marital-status×income` は MST 0.364 に対し AIM 0.034 と 10 倍良い。
   「どのペア相関が重要か決まっているなら AIM」という使い分けの根拠。
+- **ε スイープ（本デモ実測）**: → [§7](#7) にまとめた。
 
-## 7. 参考リンク
+### なぜ AIM が MST を上回りうるのか（アルゴリズム由来の解釈）
+
+> 🔎 以下は、本デモでの「AIM の TSTR が最も高かった／全ペアで 2-way が最良だった」という結果に対する、
+> AIM 論文 [arXiv:2201.12677](https://arxiv.org/abs/2201.12677) のアルゴリズム的性質からの解釈である。
+> 検証対象 DPSynth についての「列間依存が下流有用性に効く」という要約は [メインレポート §6.1](index.html) にある。
+
+機構間の差は、推定エンジン（[Private-PGM](method-pgm.html)）が共通である以上、**どのマージナルを測定して渡すか**に帰着する。
+
+- **MST は最大全域木の d−1 本の 2-way に固定**される。木に載らないペアは独立扱いになり、
+  そのペアの相関が強いほど崩れる（[MST 解説 §6](method-mst.html)）。一度きりの選定で、後から修正する機会もない。
+- **AIM は木の制約を持たず**、毎ラウンド「現在のモデルが最も外しているマージナル」を適応的に選ぶ。
+  同じ属性（本データなら `income`）の周りに複数の依存を張れ、3-way も扱える。
+  このため、MST が木から落とした `marital-status×income`・`occupation×income` を
+  AIM は測定対象に拾い上げられ、下流の `income` 予測（TSTR）に効く相関を保持しやすい。
+
+つまり本デモで AIM が優位だったのは、**「ワークロード（＝下流で重要なマージナル）に向けて測定対象を適応選択する」という
+AIM 固有の設計**が、木構造の制約を持つ MST より広いペア相関を保持できたためと解釈できる。
+ただしこれは無償ではなく、次の計算コストとパラメータ依存性を伴う。
+
+### 計算コストとパラメータ依存性（アルゴリズム由来）
+
+- **計算コスト**: AIM は毎ラウンド測定を追加し、そのたびに Private-PGM の再推定が走る（[Private-PGM 解説 §4](method-pgm.html)）。
+  ウォームスタートで 1 ラウンドの推定は速くなるが、ラウンド数ぶん積み上がるため MST（測定・推定とも一度きり）より重い。
+  本デモでは約 90 秒（MST の約 10 倍）。公式注記では `max_model_size` を上げると**数時間**級になりうる。
+- **パラメータ依存性**: `max_rounds`・`max_model_size` が結果と実行時間を大きく左右する。
+  本デモでは `max_rounds=16, pgm_iters=1000, max_model_size=100` に抑えており、
+  この制限のもとでは**数値列同士の相関誤差が MST より大きかった**（§6 機構比較）。
+  AIM が常に全指標で優るわけではなく、設定次第で得手不得手が動く点に注意する。
+
+## 7. ε を変えたときの挙動（本デモの ε スイープ）
+
+本節は、MST の ε スイープ（[メインレポート §5.1](index.html)）と同条件・同形式で、AIM を
+ε = 0.5 / 1.0 / 2.0 / 10.0 の 4 水準で生成し、ε–有用性の変化を見るために設計した。
+生成条件は MST スイープと揃えた次のとおり: UCI Adult 20,000 行・9 列・δ=1e-5・`seed=42`、
+`AIMConfig(max_rounds=16, pgm_iters=1000, max_model_size=100)`。実装（`scripts/01_generate.py` の AIM スイープ、
+`scripts/02_evaluate.py` の図 [メインレポート 図2](index.html) への AIM 系列の重ね描き）は組み込み済みである。
+
+> ⚠️ **実測は現時点で未取得（pending）**: ε=1.0 を除く AIM スイープ 3 本（ε=0.5 / 2.0 / 10.0）は、
+> 本実行環境で **XLA/LLVM の JIT コンパイルがメモリ確保に失敗（`LLVM compilation error: Cannot allocate memory` /
+> `Unable to allocate section memory`、`RLIMIT_MEMLOCK` の上限に起因）**して完走しなかった。
+> プロセスを ε ごとに分離しても再現する環境固有の制約であり、**数値は捏造しない**方針に従い下表は未記入のまま残す。
+> ε=1.0 の値は機構比較（[§6](#6)・[メインレポート §5.1](index.html)）に既出のものを再掲する。
+> メモリ上限を緩められる環境（`ulimit -l` を引き上げ可能、または十分な実行可能メモリ）で
+> `scripts/01_generate.py`→`02_evaluate.py` を再実行すれば、下表と図2 の AIM 系列が埋まる。
+
+**表: AIM の ε–有用性（実測待ち。ε=1.0 のみ既出値を再掲）**
+
+| 設定 | 平均 1-way TVD ↓ | 相関誤差 ↓ | TSTR AUC ↑ | 生成時間 |
+|---|---|---|---|---|
+| AIM (ε=0.5) | _（実測 pending）_ | _（実測 pending）_ | _（実測 pending）_ | _（実測 pending）_ |
+| AIM (ε=1.0) | 0.105 | 0.226 | 0.768 | 約 90 秒 |
+| AIM (ε=2.0) | _（実測 pending）_ | _（実測 pending）_ | _（実測 pending）_ | _（実測 pending）_ |
+| AIM (ε=10.0) | _（実測 pending）_ | _（実測 pending）_ | _（実測 pending）_ | _（実測 pending）_ |
+
+**想定する読み取りと課題（実験設計上の論点。実測で確認すべき仮説であり、断定ではない）:**
+
+- 一般に ε を上げる（プライバシーを緩める）ほど分布再現性は改善することが期待される。
+  参考までに MST の ε スイープでは平均 1-way TVD が ε=0.5 → 10 で 0.120 → 0.059 へおおむね単調に改善した
+  （[メインレポート §5.1](index.html)）。AIM が同様の単調改善を示すか、異なる ε 依存を見せるかが本スイープの問いである。
+- AIM は機構内部の適応選択（SELECT）にも予算を割くため、ε が小さい領域では選定・測定の双方で
+  ノイズが効きやすく、MST とは異なる ε 依存を示しうる（[§3 予算配分](#3)）。
+- **開いた課題**: ① 単一シードのため非単調性が出ても確率的ばらつきと構造的傾向を切り分けられない
+  （MST 同様、複数シードでの再評価が望ましい）。② AIM は `max_rounds`・`max_model_size` の制限下で動かすため、
+  ε を上げたときに「解禁されるマージナルが増える」効果が制限に頭打ちされる可能性がある
+  （[§5 計算コストとパラメータ依存性](#_1)）。
+  ③ 本環境の JIT メモリ制約により、より大きな ε（測定マージナルが大きくなりやすい）で
+  コンパイルが失敗した点自体が、AIM の計算資源依存性の一例でもある。これらの精査は残課題である。
+
+## 8. 参考リンク
 
 - 原論文: McKenna et al., *AIM: An Adaptive and Iterative Mechanism for Differentially Private Synthetic Data* — [arXiv:2201.12677](https://arxiv.org/abs/2201.12677)
 - 実装: [`dpsynth/discrete_mechanisms/aim.py`](https://github.com/google/dpsynth/blob/main/dpsynth/discrete_mechanisms/aim.py)（GDP 会計版の `aim_gdp.py` もある）

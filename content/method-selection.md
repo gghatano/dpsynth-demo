@@ -1,6 +1,6 @@
 # 手法選定ガイド: MST / AIM / INDEPENDENT をどう選ぶか
 
-各機構の詳細: [MST](method-mst.html) ｜ [AIM](method-aim.html) ｜ [INDEPENDENT](method-independent.html) ｜ [メインレポート](index.html)
+各機構の詳細: [MST](method-mst.html) ｜ [AIM](method-aim.html) ｜ [INDEPENDENT](method-independent.html) ｜ [Private-PGM（共有推定エンジン）](method-pgm.html) ｜ [メインレポート](index.html)
 
 > ⚠️ **免責**: DPSynth は機構を自動選定しない。**どの機構を採用するか、またプライバシー予算
 > （ε, δ）が要件を満たすかの最終判断は、利用者自身の責任**である。本ページは
@@ -127,4 +127,4 @@ flowchart TD
 
 ---
 
-各機構の詳細: [MST の解説](method-mst.html) ｜ [AIM の解説](method-aim.html) ｜ [INDEPENDENT の解説](method-independent.html)
+各機構の詳細: [MST の解説](method-mst.html) ｜ [AIM の解説](method-aim.html) ｜ [INDEPENDENT の解説](method-independent.html) ｜ [Private-PGM の解説](method-pgm.html)

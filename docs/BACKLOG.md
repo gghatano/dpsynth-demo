@@ -13,5 +13,6 @@
 | 7 | データ取得の固定化（チェックサム/ベンダリング） | `reproducibility` | jbrownlee ミラーの消失リスクに備え、SHA256 検証 or データ同梱を検討 |
 | 8 | cross-attribute constraints のデモ | `enhancement` `docs` | 列間制約（例: education と educational-num の整合）を使った生成例を追加 |
 | 9 | 複数シード平均を本体レポートにも反映 | `docs` `reproducibility` | 実験Bの mean±std を要約として §6 に取り込み、単一シード依存の注意を強化 |
+| 10 | AIM の ε スイープ実測を取得（method-aim §7） | `enhancement` `reproducibility` | コード実装済み。リモートは memlock 上限で未完走。ローカルで `01_generate.py`→`02_evaluate.py` 再実行し表・図2 を埋める（Issue #13） |
 
 > ラベルは `create_issues.sh` が存在しなければ自動作成します（既存なら無視）。

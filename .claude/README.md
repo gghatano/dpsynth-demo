@@ -12,6 +12,10 @@
 | パス | 役割 |
 |---|---|
 | `docs/documentation-conventions.md` | 規約の本体（構成・記述の分離原則・実験の計画/実行・公開/再現性/課題管理の原則） |
+| **サブエージェント（モデルティア制: 計画=上位 / レビュー=中位 / 実行=下位）** | |
+| `agents/planner.md` | 計画・調査・issue 起案担当（**上位ティア**）。編集は Markdown に限る |
+| `agents/reviewer.md` | レビュー担当（**中位ティア**）。チェックリスト実行・指摘洗い出し・軽微修正 |
+| `agents/implementer.md` | 実行・実装担当（**下位ティア**）。1 worktree = 1 issue 単位、実装は TDD |
 | **オーケストレーター** | |
 | `skills/research-cycle/` | 全体統括。①骨子→②計画→③実行（反復）→④整理 の現在地を判定して順に進める |
 | `skills/doc-cycle/` | 整理系の統括。④〜⑦ を順次実行し統合レポートを出す（research-cycle の最終段） |

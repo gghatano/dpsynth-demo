@@ -165,22 +165,33 @@ def make_figures(real, syns, metrics):
     plt.savefig(FIG / "fig1_tvd_by_mechanism.png", dpi=130)
     plt.close()
 
-    # Fig2: epsilon スイープ (MST) の平均TVD（meta から MST 系を動的収集）
-    eps_tags = []
-    for r in meta["runs"]:
-        if r["tag"].startswith("mst_eps") and r["tag"] in metrics["one_way_tvd"]:
-            eps_tags.append((r["tag"], r["epsilon"]))
-    eps_tags.sort(key=lambda te: te[1])
-    plt.figure(figsize=(6, 4.5))
-    xs = [e for _, e in eps_tags]
-    ys = [metrics["one_way_tvd"][t]["__mean__"] for t, _ in eps_tags]
-    plt.plot(xs, ys, "o-", color="#c0392b")
+    # Fig2: epsilon スイープの平均TVD（MST と AIM を meta から動的収集して重ねる）
+    def collect_eps(prefix):
+        tags = []
+        for r in meta["runs"]:
+            if r["tag"].startswith(prefix) and r["tag"] in metrics["one_way_tvd"]:
+                tags.append((r["tag"], r["epsilon"]))
+        tags.sort(key=lambda te: te[1])
+        return tags
+
+    plt.figure(figsize=(6.4, 4.5))
+    series_eps = [("mst_eps", "MST", "#c0392b", "o-"),
+                  ("aim_eps", "AIM", "#2980b9", "s--")]
+    for prefix, label, color, style in series_eps:
+        eps_tags = collect_eps(prefix)
+        if not eps_tags:
+            continue
+        xs = [e for _, e in eps_tags]
+        ys = [metrics["one_way_tvd"][t]["__mean__"] for t, _ in eps_tags]
+        plt.plot(xs, ys, style, color=color, label=label)
+        for xx, yy in zip(xs, ys):
+            plt.annotate(f"{yy:.3f}", (xx, yy), textcoords="offset points",
+                         xytext=(0, 8), fontsize=8, color=color)
     plt.xscale("log")
     plt.xlabel("privacy budget epsilon (log scale)")
     plt.ylabel("mean 1-way TVD")
-    plt.title("Privacy-utility tradeoff (MST)")
-    for xx, yy in zip(xs, ys):
-        plt.annotate(f"{yy:.3f}", (xx, yy), textcoords="offset points", xytext=(0, 8))
+    plt.title("Privacy-utility tradeoff (MST vs AIM)")
+    plt.legend()
     plt.grid(True, alpha=0.3)
     plt.tight_layout()
     plt.savefig(FIG / "fig2_epsilon_tradeoff.png", dpi=130)

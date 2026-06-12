@@ -25,6 +25,12 @@ echo "==> 02 品質評価（1-way TVD / 相関誤差 / TSTR）と図生成"
 echo "==> 10 追加実験（numerical_bins / マルチシード / 2-way）"
 "$PY" scripts/10_experiments.py
 
+echo "==> 10e 追加実験E（マルチシード ε スイープ: まず軽量プリラン → 本実行）"
+echo "    軽量プリラン（ε=1,10・各2シード）で疎通確認"
+EXP_E_FAST=1 "$PY" scripts/10_experiments.py e
+echo "    本実行（ε=0.5/1/2/10・MST/IND 10シード, AIM 5シード）— 時間がかかります"
+"$PY" scripts/10_experiments.py e
+
 echo "==> 11 追加実験D（メンバーシップ推論攻撃 MIA）"
 "$PY" scripts/11_mia.py
 

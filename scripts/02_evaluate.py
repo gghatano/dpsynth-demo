@@ -166,6 +166,8 @@ def make_figures(real, syns, metrics):
     plt.close()
 
     # Fig2: epsilon スイープの平均TVD（MST と AIM を meta から動的収集して重ねる）
+    #   注: これは seed=42 単発の簡易図。ε トレンドの確定版（mean±std）は
+    #   10_experiments.py の exp_e が figures/expE_eps_multiseed.png に出す。
     def collect_eps(prefix):
         tags = []
         for r in meta["runs"]:
@@ -190,7 +192,7 @@ def make_figures(real, syns, metrics):
     plt.xscale("log")
     plt.xlabel("privacy budget epsilon (log scale)")
     plt.ylabel("mean 1-way TVD")
-    plt.title("Privacy-utility tradeoff (MST vs AIM)")
+    plt.title("Privacy-utility tradeoff (MST vs AIM, single seed=42)")
     plt.legend()
     plt.grid(True, alpha=0.3)
     plt.tight_layout()

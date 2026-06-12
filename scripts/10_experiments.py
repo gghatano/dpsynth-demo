@@ -3,14 +3,20 @@
 実験A: numerical_bins スイープ — 数値列の忠実度がビン数でどう変わるか（MST, eps=1.0）
 実験B: マルチシード頑健性 — seed を変えたときの平均TVD / TSTR AUC の mean±std
 実験C: 2-way 周辺分布の忠実度 — ペア分布の TVD（相関保持を定量化、既存の合成CSVを再利用）
+実験E: マルチシード ε スイープ — MST / AIM / INDEPENDENT を ε×seed で回し、
+       各 (機構, ε) の平均TVD・相関誤差・TSTR AUC を mean±std で取得（Issue #14）。
+       単一シードの ε トレンドは run-to-run 分散に埋もれるため、本実験で確定する。
 
 出力: experiments/metrics_experiments.json, figures/exp*.png
-実行: .venv/bin/python scripts/10_experiments.py
+実行: .venv/bin/python scripts/10_experiments.py            # 全実験
+      .venv/bin/python scripts/10_experiments.py e          # exp_e のみ
+      EXP_E_FAST=1 .venv/bin/python scripts/10_experiments.py e   # 軽量プリラン
 """
 
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
 
 import numpy as np
@@ -99,6 +105,14 @@ def mean_tvd(real, syn) -> float:
         bins = np.histogram_bin_edges(real[c].dropna(), bins=20)
         vals.append(tvd_num(real[c], syn[c], bins))
     return float(np.mean(vals))
+
+
+def corr_error(real, syn) -> float:
+    # 数値列ペアの Pearson 相関の絶対誤差の平均（02_evaluate.py と同一定義）
+    rc = real[NUM_COLS].corr().to_numpy()
+    sc = syn[NUM_COLS].corr().to_numpy()
+    iu = np.triu_indices_from(rc, k=1)
+    return float(np.mean(np.abs(rc[iu] - sc[iu])))
 
 
 def encode_xy(df, categories):
@@ -247,6 +261,86 @@ def exp_c(real):
     return {"pairs": labels, "tvd": res}
 
 
+# ---------- 実験E: マルチシード ε スイープ ----------
+def exp_e(real, domains, train, test, categories):
+    """MST / AIM / INDEPENDENT を ε×seed で回し、各 (機構, ε) を mean±std で評価する。
+
+    単一シードの ε スイープ（01_generate.py / fig2）は run-to-run 分散に埋もれて
+    ε トレンドが判定できない（Issue #14）。本実験はシードを振って構造的傾向と
+    確率的ばらつきを分離する。AIM は高 ε ほど重いので EXP_E_FAST=1 で軽量プリラン可。
+
+    環境変数:
+      EXP_E_FAST=1 ... ε=(1.0, 10.0)・少シードの軽量プリラン
+      EXP_E_EPS    ... カンマ区切りで ε を上書き（例 "0.5,1.0,2.0,10.0"）
+    """
+    fast = os.environ.get("EXP_E_FAST") == "1"
+    if os.environ.get("EXP_E_EPS"):
+        eps_list = [float(x) for x in os.environ["EXP_E_EPS"].split(",")]
+    else:
+        eps_list = [1.0, 10.0] if fast else [0.5, 1.0, 2.0, 10.0]
+
+    # 機構ごとのシード数。AIM は重いので既定で少なめ（exp_b と同方針）。
+    if fast:
+        plans = [("MST", lambda s: dm.MSTConfig(seed=s), [0, 1]),
+                 ("AIM", lambda s: dm.AIMConfig(seed=s, max_rounds=16, pgm_iters=1000,
+                                                max_model_size=100), [0, 1]),
+                 ("INDEPENDENT", lambda s: dm.IndependentConfig(seed=s), [0, 1])]
+    else:
+        plans = [("MST", lambda s: dm.MSTConfig(seed=s), list(range(10))),
+                 ("AIM", lambda s: dm.AIMConfig(seed=s, max_rounds=16, pgm_iters=1000,
+                                                max_model_size=100), list(range(5))),
+                 ("INDEPENDENT", lambda s: dm.IndependentConfig(seed=s), list(range(10)))]
+
+    print(f"\n== 実験E: マルチシード ε スイープ (fast={fast}, eps={eps_list}) ==")
+    summary = {}
+    for name, cfg, seeds in plans:
+        summary[name] = {}
+        for eps in eps_list:
+            tvds, cerrs, aucs = [], [], []
+            for s in seeds:
+                syn = dpsynth.generate(data=real, domains=domains, epsilon=eps,
+                                       delta=DELTA, discrete_config=cfg(s),
+                                       numerical_bins=16)
+                tvds.append(mean_tvd(train, syn))
+                cerrs.append(corr_error(train, syn))
+                aucs.append(tstr_auc(syn, test, categories))
+                _clear_jit_caches()
+            summary[name][str(eps)] = {
+                "epsilon": eps, "n": len(seeds), "seeds": seeds,
+                "tvd_mean": float(np.mean(tvds)), "tvd_std": float(np.std(tvds)),
+                "corr_err_mean": float(np.mean(cerrs)), "corr_err_std": float(np.std(cerrs)),
+                "auc_mean": float(np.nanmean(aucs)), "auc_std": float(np.nanstd(aucs)),
+                "tvd": tvds, "corr_err": cerrs, "auc": aucs,
+            }
+            r = summary[name][str(eps)]
+            print(f"  {name:12} eps={eps:<5} n={len(seeds)}  "
+                  f"TVD={r['tvd_mean']:.3f}±{r['tvd_std']:.3f}  "
+                  f"corrErr={r['corr_err_mean']:.3f}±{r['corr_err_std']:.3f}  "
+                  f"AUC={r['auc_mean']:.3f}±{r['auc_std']:.3f}")
+
+    # 図: ε に対する TVD / TSTR AUC（mean±std のエラーバー）を機構別に重ねる
+    colors = {"MST": "#c0392b", "AIM": "#2980b9", "INDEPENDENT": "#27ae60"}
+    fig, axes = plt.subplots(1, 2, figsize=(11, 4.4))
+    panels = [("tvd", "Mean 1-way TVD (lower = better)"),
+              ("auc", "TSTR ROC-AUC (higher = better)")]
+    for ax, (key, title) in zip(axes, panels):
+        for name in summary:
+            rows = sorted(summary[name].values(), key=lambda r: r["epsilon"])
+            xs = [r["epsilon"] for r in rows]
+            ys = [r[f"{key}_mean"] for r in rows]
+            es = [r[f"{key}_std"] for r in rows]
+            ax.errorbar(xs, ys, yerr=es, marker="o", capsize=4,
+                        color=colors.get(name), label=name)
+        ax.set_xscale("log"); ax.set_xticks(eps_list)
+        ax.set_xticklabels([str(e) for e in eps_list])
+        ax.set_xlabel("epsilon (log scale)"); ax.set_title(title)
+        ax.grid(True, alpha=0.3); ax.legend()
+    fig.suptitle("Exp E: multi-seed epsilon sweep (mean±std over seeds)", fontsize=11)
+    fig.tight_layout(rect=(0, 0, 1, 0.95))
+    fig.savefig(FIG / "expE_eps_multiseed.png", dpi=130); plt.close(fig)
+    return summary
+
+
 def main(only: str | None = None):
     real = load_real()
     mfile = EXP / "metrics_experiments.json"
@@ -261,6 +355,11 @@ def main(only: str | None = None):
         metrics["exp_b"] = exp_b(real, build_domains(real), train, test, categories)
     if only in (None, "c"):
         metrics["exp_c"] = exp_c(real)
+    if only == "e":   # 重いので既定バッチには含めず明示実行のみ
+        train, test = real_split()
+        categories = {c: sorted(set(train[c].astype(str)) | set(test[c].astype(str)))
+                      for c in CAT_COLS}
+        metrics["exp_e"] = exp_e(real, build_domains(real), train, test, categories)
 
     mfile.write_text(json.dumps(metrics, indent=2, ensure_ascii=False))
     print("\nexperiments/metrics_experiments.json + figures written. done.")

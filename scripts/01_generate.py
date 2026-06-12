@@ -1,7 +1,7 @@
 """DPSynth In-Memory API デモ: Adult Income データから DP 合成データを生成する。
 
 - 機構比較      : MST / AIM / INDEPENDENT を epsilon=1.0 で比較
-- 予算スイープ  : MST / AIM を epsilon=0.5 / 1.0 / 2.0 / 10.0 で比較
+- 予算スイープ  : MST / AIM を epsilon=0.5 / 1.0 / 2.0 / 10.0 で比較（単一シードの簡易パス）
 - 出力          : outputs/synthetic_<tag>.csv と outputs/run_meta.json
 
 実行 (WSL の venv 経由):
@@ -108,7 +108,10 @@ def main() -> None:
 
     # 3) プライバシー予算スイープ (AIM) — eps=1.0 は上で生成済み
     #    MST スイープと同形式で AIM の ε–有用性の変化を実測する。
-    #    AIM は 1 実行あたり重い（~90s/run）ため 3 本追加で数分かかる。
+    #    AIM は 1 実行あたり重い（~90s〜数百秒/run）ため 3 本追加で時間がかかる。
+    #    注: ここは seed=42 単発の簡易パス。ε トレンドの確定は単一シードでは
+    #    分散に埋もれるため（Issue #14）、本評価は 10_experiments.py の
+    #    exp_e（マルチシード ε スイープ）で行う。
     for eps in (0.5, 2.0, 10.0):
         runs.append(run(df, domains, tag=f"aim_eps{eps}", epsilon=eps, delta=delta,
                         config=dm.AIMConfig(seed=SEED, max_rounds=16, pgm_iters=1000,

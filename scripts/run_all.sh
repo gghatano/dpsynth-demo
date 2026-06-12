@@ -34,7 +34,7 @@ echo "    本実行（ε=0.5/1/2/10・MST/IND 10シード, AIM 5シード）— 
 echo "==> 11 追加実験D（メンバーシップ推論攻撃 MIA）"
 "$PY" scripts/11_mia.py
 
-echo "==> 03 レポート HTML 生成（REPORT.html / EXPERIMENTS.html / _site/）"
+echo "==> 03 レポート HTML 生成（htmls/ 配下）"
 "$PY" scripts/03_build_html.py
 
-echo "完了: outputs/ と figures/ に結果、REPORT.html / EXPERIMENTS.html にレポートが生成されました。"
+echo "完了: outputs/ と figures/ に結果、htmls/（index.html ほか）にレポートが生成されました。"

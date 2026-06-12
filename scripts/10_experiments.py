@@ -149,6 +149,7 @@ def exp_a(real, domains):
             t = tvd_num(real[c], syn[c], edges)
             res[c].append(t)
         print(f"  bins={nb:3d}  " + "  ".join(f"{c}={res[c][-1]:.3f}" for c in NUM_COLS))
+        _clear_jit_caches()   # 直後に exp_b（多シード）が続くため JIT 蓄積を残さない
 
     plt.figure(figsize=(7, 4.6))
     for c in NUM_COLS:
@@ -262,7 +263,7 @@ def exp_c(real):
 
 
 # ---------- 実験E: マルチシード ε スイープ ----------
-def exp_e(real, domains, train, test, categories):
+def exp_e(real, domains, train, test, categories, mfile=None, metrics=None):
     """MST / AIM / INDEPENDENT を ε×seed で回し、各 (機構, ε) を mean±std で評価する。
 
     単一シードの ε スイープ（01_generate.py / fig2）は run-to-run 分散に埋もれて
@@ -270,10 +271,18 @@ def exp_e(real, domains, train, test, categories):
     確率的ばらつきを分離する。AIM は高 ε ほど重いので EXP_E_FAST=1 で軽量プリラン可。
 
     環境変数:
-      EXP_E_FAST=1 ... ε=(1.0, 10.0)・少シードの軽量プリラン
-      EXP_E_EPS    ... カンマ区切りで ε を上書き（例 "0.5,1.0,2.0,10.0"）
+      EXP_E_FAST=1   ... ε=(1.0, 10.0)・少シードの軽量プリラン
+      EXP_E_EPS      ... カンマ区切りで ε を上書き（例 "0.5,1.0,2.0,10.0"）
+      EXP_E_RESUME=1 ... 既存チェックポイントの本実行済み (機構, ε) を再計算せずスキップ
+                          （クラッシュ後の再開用。fast プリラン分は対象外で上書きされる）
+
+    長時間ラン耐性:
+      - 各 seed の generate は try/except で囲み、失敗（XLA メモリ確保等）はその seed を
+        スキップして継続する（1 本の失敗で数時間分を捨てない）。
+      - 各 (機構, ε) 完了ごとに mfile へ部分保存（checkpoint）する。
     """
     fast = os.environ.get("EXP_E_FAST") == "1"
+    resume = os.environ.get("EXP_E_RESUME") == "1"
     if os.environ.get("EXP_E_EPS"):
         eps_list = [float(x) for x in os.environ["EXP_E_EPS"].split(",")]
     else:
@@ -291,32 +300,55 @@ def exp_e(real, domains, train, test, categories):
                                                 max_model_size=100), list(range(5))),
                  ("INDEPENDENT", lambda s: dm.IndependentConfig(seed=s), list(range(10)))]
 
-    print(f"\n== 実験E: マルチシード ε スイープ (fast={fast}, eps={eps_list}) ==")
+    print(f"\n== 実験E: マルチシード ε スイープ (fast={fast}, resume={resume}, eps={eps_list}) ==")
+    # resume 用に既存チェックポイントを引き継ぐ（本実行済みのみ尊重し、fast 分は上書き）
     summary = {}
+    if resume and metrics and isinstance(metrics.get("exp_e"), dict):
+        summary = {k: dict(v) for k, v in metrics["exp_e"].items()}
+
     for name, cfg, seeds in plans:
-        summary[name] = {}
+        summary.setdefault(name, {})
         for eps in eps_list:
-            tvds, cerrs, aucs = [], [], []
+            key = str(eps)
+            done = summary[name].get(key)
+            if resume and done and not done.get("fast"):
+                print(f"  {name:12} eps={eps:<5} skip (resume: 本実行済み n={done.get('n')})")
+                continue
+            tvds, cerrs, aucs, used = [], [], [], []
             for s in seeds:
-                syn = dpsynth.generate(data=real, domains=domains, epsilon=eps,
-                                       delta=DELTA, discrete_config=cfg(s),
-                                       numerical_bins=16)
+                try:
+                    syn = dpsynth.generate(data=real, domains=domains, epsilon=eps,
+                                           delta=DELTA, discrete_config=cfg(s),
+                                           numerical_bins=16)
+                except Exception as exc:  # noqa: BLE001  XLA メモリ等で機構が失敗しうる
+                    print(f"  {name:12} eps={eps:<5} seed={s} FAILED: "
+                          f"{type(exc).__name__}: {exc} -> skip")
+                    _clear_jit_caches()
+                    continue
                 tvds.append(mean_tvd(train, syn))
                 cerrs.append(corr_error(train, syn))
                 aucs.append(tstr_auc(syn, test, categories))
+                used.append(s)
                 _clear_jit_caches()
-            summary[name][str(eps)] = {
-                "epsilon": eps, "n": len(seeds), "seeds": seeds,
+            if not tvds:
+                print(f"  {name:12} eps={eps:<5} 全シード失敗、この (機構, ε) はスキップ")
+                continue
+            summary[name][key] = {
+                "epsilon": eps, "n": len(used), "seeds": used, "fast": fast,
                 "tvd_mean": float(np.mean(tvds)), "tvd_std": float(np.std(tvds)),
                 "corr_err_mean": float(np.mean(cerrs)), "corr_err_std": float(np.std(cerrs)),
                 "auc_mean": float(np.nanmean(aucs)), "auc_std": float(np.nanstd(aucs)),
                 "tvd": tvds, "corr_err": cerrs, "auc": aucs,
             }
-            r = summary[name][str(eps)]
-            print(f"  {name:12} eps={eps:<5} n={len(seeds)}  "
+            r = summary[name][key]
+            print(f"  {name:12} eps={eps:<5} n={len(used)}  "
                   f"TVD={r['tvd_mean']:.3f}±{r['tvd_std']:.3f}  "
                   f"corrErr={r['corr_err_mean']:.3f}±{r['corr_err_std']:.3f}  "
                   f"AUC={r['auc_mean']:.3f}±{r['auc_std']:.3f}")
+            # チェックポイント: (機構, ε) 完了ごとに部分保存して途中失敗に備える
+            if mfile is not None and metrics is not None:
+                metrics["exp_e"] = summary
+                mfile.write_text(json.dumps(metrics, indent=2, ensure_ascii=False))
 
     # 図: ε に対する TVD / TSTR AUC（mean±std のエラーバー）を機構別に重ねる
     colors = {"MST": "#c0392b", "AIM": "#2980b9", "INDEPENDENT": "#27ae60"}
@@ -326,6 +358,8 @@ def exp_e(real, domains, train, test, categories):
     for ax, (key, title) in zip(axes, panels):
         for name in summary:
             rows = sorted(summary[name].values(), key=lambda r: r["epsilon"])
+            if not rows:   # その機構が全 ε で失敗した場合はスキップ
+                continue
             xs = [r["epsilon"] for r in rows]
             ys = [r[f"{key}_mean"] for r in rows]
             es = [r[f"{key}_std"] for r in rows]
@@ -359,7 +393,9 @@ def main(only: str | None = None):
         train, test = real_split()
         categories = {c: sorted(set(train[c].astype(str)) | set(test[c].astype(str)))
                       for c in CAT_COLS}
-        metrics["exp_e"] = exp_e(real, build_domains(real), train, test, categories)
+        # mfile/metrics を渡してチェックポイント（途中失敗時も部分結果を保全）
+        metrics["exp_e"] = exp_e(real, build_domains(real), train, test, categories,
+                                 mfile=mfile, metrics=metrics)
 
     mfile.write_text(json.dumps(metrics, indent=2, ensure_ascii=False))
     print("\nexperiments/metrics_experiments.json + figures written. done.")

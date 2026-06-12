@@ -81,7 +81,7 @@ footer { max-width: 1180px; margin: 0 auto; padding: 24px; color: var(--muted); 
 <header class="hero"><div class="inner">
   <h1>DPSynth 解説・実証デモ</h1>
   <p>MST（Maximum Spanning Tree）— ペア相関の最大全域木を DP で選ぶデフォルト機構の解説</p>
-</div><nav class="nav"><a href="index.html">📄 レポート</a><a href="experiments.html">🧪 追加実験</a><a href="method-selection.html">🧭 手法選定</a><a href="method-mst.html" class="active">🌲 MST</a><a href="method-aim.html">♻️ AIM</a><a href="method-independent.html">📊 INDEPENDENT</a><a href="setup.html">🛠 環境構築</a><a href="usage.html">🔌 API・CLI</a><a href="reproduce.html">🔁 再現手順</a><a href="engineering-notes.html">🐞 実装ノート</a></nav></header>
+</div><nav class="nav"><a href="index.html">📄 レポート</a><a href="experiments.html">🧪 追加実験</a><a href="method-selection.html">🧭 手法選定</a><a href="method-mst.html" class="active">🌲 MST</a><a href="method-aim.html">♻️ AIM</a><a href="method-independent.html">📊 INDEPENDENT</a><a href="method-pgm.html">🧩 Private-PGM</a><a href="setup.html">🛠 環境構築</a><a href="usage.html">🔌 API・CLI</a><a href="reproduce.html">🔁 再現手順</a><a href="engineering-notes.html">🐞 実装ノート</a></nav></header>
 <div class="layout">
   <nav class="toc"><strong>目次</strong><div class="toc">
 <ul>
@@ -90,13 +90,16 @@ footer { max-width: 1180px; margin: 0 auto; padding: 24px; color: var(--muted); 
 <li><a href="#3">3. プライバシー予算の使われ方</a></li>
 <li><a href="#4-mstconfig">4. 主なパラメータ（MSTConfig）</a></li>
 <li><a href="#5">5. 得意なケース・苦手なケース</a></li>
-<li><a href="#6">6. 本デモでの実験結果</a></li>
+<li><a href="#6">6. 本デモでの実験結果</a><ul>
+<li><a href="#_1">全域木制約による「ペアの崩れ」（アルゴリズム由来の解釈）</a></li>
+</ul>
+</li>
 <li><a href="#7">7. 参考リンク</a></li>
 </ul>
 </div>
 </nav>
   <article><h1 id="mst-maximum-spanning-tree">MST 機構の解説（Maximum Spanning Tree）</h1>
-<p><a href="method-selection.html">手法選定ガイド</a> ｜ <a href="method-aim.html">AIM の解説</a> ｜ <a href="method-independent.html">INDEPENDENT の解説</a> ｜ <a href="index.html">メインレポート</a></p>
+<p><a href="method-selection.html">手法選定ガイド</a> ｜ <a href="method-aim.html">AIM の解説</a> ｜ <a href="method-independent.html">INDEPENDENT の解説</a> ｜ <a href="method-pgm.html">Private-PGM の解説</a> ｜ <a href="index.html">メインレポート</a></p>
 <blockquote class="badge-doc">
 <p>📘 本ページのアルゴリズム・実装の記述は、原論文 <a href="https://arxiv.org/abs/2108.04978">arXiv:2108.04978</a> と
 <a href="https://github.com/google/dpsynth">google/dpsynth</a> のソースコード（<code>dpsynth/discrete_mechanisms/mst.py</code>、2026-06 時点の main ブランチ）に基づく。
@@ -222,6 +225,26 @@ flowchart LR
 <li><strong>ε スイープ（<a href="index.html">メインレポート §5.1</a>）</strong>: ε を 0.5 → 10 に上げると平均 1-way TVD は
   0.120 → 0.059 へおおむね単調に改善する。</li>
 </ul>
+<h3 id="_1">全域木制約による「ペアの崩れ」（アルゴリズム由来の解釈）</h3>
+<blockquote class="badge-note">
+<p>🔎 以下は、上記 2-way 忠実度の結果に対する、MST アルゴリズム <a href="https://arxiv.org/abs/2108.04978">arXiv:2108.04978</a> の
+構造的制約からの解釈である。検証対象 DPSynth についての「列間依存が下流有用性に効く」という要約は
+<a href="index.html">メインレポート §6.1</a> にある。</p>
+</blockquote>
+<p>MST が保持できる 2-way 依存は、<strong>最大全域木に選ばれた d−1 本の辺だけ</strong>である。
+推定エンジン（<a href="method-pgm.html">Private-PGM</a>）には木構造のクリークしか渡されないため、
+<strong>木から外れた属性ペアは独立として推定</strong>される。</p>
+<ul>
+<li>選定は ① ノイズ付きの 1-way から推定したペア相関スコアに基づき、② 最初に 1 回だけ行われる。
+  そのため、<strong>本当は相関が強いのにノイズや木の容量（d−1 本）の都合で落ちたペア</strong>は、相関が丸ごと失われる。</li>
+<li>独立扱いになるだけなら INDEPENDENT と同等に見えるが、実際には<strong>木に載った辺の制約を介して
+  間接的に誤った相関が回り込む</strong>ことがあり、その場合は独立仮定の INDEPENDENT より悪化する。
+  本デモの <code>marital-status×income</code>（MST 0.364 vs INDEPENDENT は中位）はこの例で、
+  「相関を張るより張らない方がマシ」という逆転が起きうる（<a href="experiments.html">追加実験C</a>・<a href="method-independent.html">INDEPENDENT 解説 §6</a>）。</li>
+</ul>
+<p>これは MST の欠陥というより<strong>「強い相関が木状につながっている」という前提が崩れたとき</strong>の構造的限界である。
+広いペア相関を木の制約なしに拾える <a href="method-aim.html">AIM</a> が、同じペアで大きく上回った（0.034）のと対照的である。
+MST 採用時は、関心のあるペアの 2-way 分布を実データと突き合わせて検証することが望ましい。</p>
 <h2 id="7">7. 参考リンク</h2>
 <ul>
 <li>原論文: McKenna et al., <em>Winning the NIST Contest: A scalable and general approach to differentially private synthetic data</em> — <a href="https://arxiv.org/abs/2108.04978">arXiv:2108.04978</a></li>

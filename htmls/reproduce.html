@@ -81,7 +81,7 @@ footer { max-width: 1180px; margin: 0 auto; padding: 24px; color: var(--muted); 
 <header class="hero"><div class="inner">
   <h1>DPSynth 解説・実証デモ</h1>
   <p>レポート本体の実験結果を再現するための手順</p>
-</div><nav class="nav"><a href="index.html">📄 レポート</a><a href="experiments.html">🧪 追加実験</a><a href="method-selection.html">🧭 手法選定</a><a href="method-mst.html">🌲 MST</a><a href="method-aim.html">♻️ AIM</a><a href="method-independent.html">📊 INDEPENDENT</a><a href="setup.html">🛠 環境構築</a><a href="usage.html">🔌 API・CLI</a><a href="reproduce.html" class="active">🔁 再現手順</a><a href="engineering-notes.html">🐞 実装ノート</a></nav></header>
+</div><nav class="nav"><a href="index.html">📄 レポート</a><a href="experiments.html">🧪 追加実験</a><a href="method-selection.html">🧭 手法選定</a><a href="method-mst.html">🌲 MST</a><a href="method-aim.html">♻️ AIM</a><a href="method-independent.html">📊 INDEPENDENT</a><a href="method-pgm.html">🧩 Private-PGM</a><a href="setup.html">🛠 環境構築</a><a href="usage.html">🔌 API・CLI</a><a href="reproduce.html" class="active">🔁 再現手順</a><a href="engineering-notes.html">🐞 実装ノート</a></nav></header>
 <div class="layout">
   <nav class="toc"><strong>目次</strong><div class="toc">
 <ul>
@@ -105,28 +105,28 @@ footer { max-width: 1180px; margin: 0 auto; padding: 24px; color: var(--muted); 
 <p><strong>前提</strong>: google/dpsynth は Windows ホイールの無い <code>python-dp</code> に依存し、Python は <code>&gt;=3.12,&lt;3.14</code>。
 <strong>Linux もしくは WSL2 (Ubuntu) + Python 3.12</strong> で実行する(Windows ネイティブ不可。詳細は <a href="setup.html">環境構築ノート</a>)。</p>
 </blockquote>
-<pre class="codehilite"><code class="language-bash"># 1. リポジトリを取得
-git clone https://github.com/gghatano/dpsynth-demo.git
-cd dpsynth-demo
+<div class="codehilite"><pre><span></span><code><span class="c1"># 1. リポジトリを取得</span>
+git<span class="w"> </span>clone<span class="w"> </span>https://github.com/gghatano/dpsynth-demo.git
+<span class="nb">cd</span><span class="w"> </span>dpsynth-demo
 
-# 2. 環境構築（uv 導入・dpsynth クローン&amp;パッチ・venv 作成・依存インストールまで一括）
-bash scripts/setup_env.sh
+<span class="c1"># 2. 環境構築（uv 導入・dpsynth クローン&amp;パッチ・venv 作成・依存インストールまで一括）</span>
+bash<span class="w"> </span>scripts/setup_env.sh
 
-# 3. 一括実行（データ取得 → DP 合成生成 → 評価 → レポート HTML 生成）
-bash scripts/run_all.sh
-</code></pre>
+<span class="c1"># 3. 一括実行（データ取得 → DP 合成生成 → 評価 → レポート HTML 生成）</span>
+bash<span class="w"> </span>scripts/run_all.sh
+</code></pre></div>
 
 <p>実行後、<code>outputs/</code>(合成 CSV・<code>metrics.json</code>)、<code>figures/</code>(評価図)、<code>htmls/</code>(レポート HTML) が再生成される。</p>
 <hr />
 <h2 id="2">2. 個別実行</h2>
 <p>各段階を個別に動かす場合は以下のとおり。</p>
-<pre class="codehilite"><code class="language-bash">.venv/bin/python scripts/00_prepare_data.py   # Adult データ取得・整形（data/adult.csv）
-.venv/bin/python scripts/01_generate.py       # 合成データ生成（MST/AIM/INDEPENDENT + ε スイープ）
-.venv/bin/python scripts/02_evaluate.py       # 1-way TVD / 相関誤差 / TSTR と図
-.venv/bin/python scripts/10_experiments.py    # 追加実験 A/B/C
-.venv/bin/python scripts/11_mia.py            # 追加実験D（MIA）
-.venv/bin/python scripts/03_build_html.py     # htmls/ 配下の各 HTML を生成
-</code></pre>
+<div class="codehilite"><pre><span></span><code>.venv/bin/python<span class="w"> </span>scripts/00_prepare_data.py<span class="w">   </span><span class="c1"># Adult データ取得・整形（data/adult.csv）</span>
+.venv/bin/python<span class="w"> </span>scripts/01_generate.py<span class="w">       </span><span class="c1"># 合成データ生成（MST/AIM/INDEPENDENT + ε スイープ）</span>
+.venv/bin/python<span class="w"> </span>scripts/02_evaluate.py<span class="w">       </span><span class="c1"># 1-way TVD / 相関誤差 / TSTR と図</span>
+.venv/bin/python<span class="w"> </span>scripts/10_experiments.py<span class="w">    </span><span class="c1"># 追加実験 A/B/C</span>
+.venv/bin/python<span class="w"> </span>scripts/11_mia.py<span class="w">            </span><span class="c1"># 追加実験D（MIA）</span>
+.venv/bin/python<span class="w"> </span>scripts/03_build_html.py<span class="w">     </span><span class="c1"># htmls/ 配下の各 HTML を生成</span>
+</code></pre></div>
 
 <hr />
 <h2 id="3">3. 再現に必要な主要情報</h2>

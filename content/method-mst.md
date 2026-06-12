@@ -1,6 +1,6 @@
 # MST 機構の解説（Maximum Spanning Tree）
 
-[手法選定ガイド](method-selection.html) ｜ [AIM の解説](method-aim.html) ｜ [INDEPENDENT の解説](method-independent.html) ｜ [メインレポート](index.html)
+[手法選定ガイド](method-selection.html) ｜ [AIM の解説](method-aim.html) ｜ [INDEPENDENT の解説](method-independent.html) ｜ [Private-PGM の解説](method-pgm.html) ｜ [メインレポート](index.html)
 
 > 📘 本ページのアルゴリズム・実装の記述は、原論文 [arXiv:2108.04978](https://arxiv.org/abs/2108.04978) と
 > [google/dpsynth](https://github.com/google/dpsynth) のソースコード（`dpsynth/discrete_mechanisms/mst.py`、2026-06 時点の main ブランチ）に基づく。
@@ -90,6 +90,27 @@ flowchart LR
   `occupation×income`（0.285）は大きく崩れ、**INDEPENDENT より悪い**ケースもあった。
 - **ε スイープ（[メインレポート §5.1](index.html)）**: ε を 0.5 → 10 に上げると平均 1-way TVD は
   0.120 → 0.059 へおおむね単調に改善する。
+
+### 全域木制約による「ペアの崩れ」（アルゴリズム由来の解釈）
+
+> 🔎 以下は、上記 2-way 忠実度の結果に対する、MST アルゴリズム [arXiv:2108.04978](https://arxiv.org/abs/2108.04978) の
+> 構造的制約からの解釈である。検証対象 DPSynth についての「列間依存が下流有用性に効く」という要約は
+> [メインレポート §6.1](index.html) にある。
+
+MST が保持できる 2-way 依存は、**最大全域木に選ばれた d−1 本の辺だけ**である。
+推定エンジン（[Private-PGM](method-pgm.html)）には木構造のクリークしか渡されないため、
+**木から外れた属性ペアは独立として推定**される。
+
+- 選定は ① ノイズ付きの 1-way から推定したペア相関スコアに基づき、② 最初に 1 回だけ行われる。
+  そのため、**本当は相関が強いのにノイズや木の容量（d−1 本）の都合で落ちたペア**は、相関が丸ごと失われる。
+- 独立扱いになるだけなら INDEPENDENT と同等に見えるが、実際には**木に載った辺の制約を介して
+  間接的に誤った相関が回り込む**ことがあり、その場合は独立仮定の INDEPENDENT より悪化する。
+  本デモの `marital-status×income`（MST 0.364 vs INDEPENDENT は中位）はこの例で、
+  「相関を張るより張らない方がマシ」という逆転が起きうる（[追加実験C](experiments.html)・[INDEPENDENT 解説 §6](method-independent.html)）。
+
+これは MST の欠陥というより**「強い相関が木状につながっている」という前提が崩れたとき**の構造的限界である。
+広いペア相関を木の制約なしに拾える [AIM](method-aim.html) が、同じペアで大きく上回った（0.034）のと対照的である。
+MST 採用時は、関心のあるペアの 2-way 分布を実データと突き合わせて検証することが望ましい。
 
 ## 7. 参考リンク
 

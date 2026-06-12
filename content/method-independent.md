@@ -1,6 +1,6 @@
 # INDEPENDENT 機構の解説
 
-[手法選定ガイド](method-selection.html) ｜ [MST の解説](method-mst.html) ｜ [AIM の解説](method-aim.html) ｜ [メインレポート](index.html)
+[手法選定ガイド](method-selection.html) ｜ [MST の解説](method-mst.html) ｜ [AIM の解説](method-aim.html) ｜ [Private-PGM の解説](method-pgm.html) ｜ [メインレポート](index.html)
 
 > 📘 本ページのアルゴリズム・実装の記述は
 > [google/dpsynth](https://github.com/google/dpsynth) のソースコード（`dpsynth/discrete_mechanisms/independent.py`、2026-06 時点の main ブランチ）に基づく。

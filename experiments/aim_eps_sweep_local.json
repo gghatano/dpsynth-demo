@@ -1,0 +1,75 @@
+{
+  "note": "Issue #13: AIM epsilon sweep measured locally on WSL2 (memlock not constrained). This is a SEPARATE local re-run; its baseline (e.g. aim_eps1) differs from the committed metrics.json that backs REPORT/index because of jaxlib/XLA numerical differences across environments. Use for method-aim section 7 (self-contained local sweep) only; do NOT mix with committed baselines.",
+  "env": {
+    "python": "3.12.3",
+    "platform": "Linux-6.6.87.2-microsoft-standard-WSL2-x86_64-with-glibc2.39"
+  },
+  "config": {
+    "dataset": "UCI Adult",
+    "rows": 20000,
+    "cols": 9,
+    "delta": 1e-05,
+    "seed": 42,
+    "AIMConfig": "max_rounds=16, pgm_iters=1000, max_model_size=100"
+  },
+  "aim": {
+    "0.5": {
+      "epsilon": 0.5,
+      "mean_one_way_tvd": 0.0684,
+      "corr_error": 0.2052,
+      "tstr_auc": 0.8409,
+      "gen_seconds": 241.88
+    },
+    "1": {
+      "epsilon": 1.0,
+      "mean_one_way_tvd": 0.1086,
+      "corr_error": 0.0073,
+      "tstr_auc": 0.6493,
+      "gen_seconds": 73.3
+    },
+    "2.0": {
+      "epsilon": 2.0,
+      "mean_one_way_tvd": 0.0585,
+      "corr_error": 0.0355,
+      "tstr_auc": 0.8611,
+      "gen_seconds": 350.4
+    },
+    "10.0": {
+      "epsilon": 10.0,
+      "mean_one_way_tvd": 0.0605,
+      "corr_error": 0.0311,
+      "tstr_auc": 0.878,
+      "gen_seconds": 458.03
+    }
+  },
+  "mst": {
+    "0.5": {
+      "epsilon": 0.5,
+      "mean_one_way_tvd": 0.087,
+      "corr_error": 0.0794,
+      "tstr_auc": 0.6403,
+      "gen_seconds": 8.63
+    },
+    "1": {
+      "epsilon": 1.0,
+      "mean_one_way_tvd": 0.07,
+      "corr_error": 0.0681,
+      "tstr_auc": 0.6779,
+      "gen_seconds": 10.76
+    },
+    "2.0": {
+      "epsilon": 2.0,
+      "mean_one_way_tvd": 0.0618,
+      "corr_error": 0.0259,
+      "tstr_auc": 0.6841,
+      "gen_seconds": 9.01
+    },
+    "10.0": {
+      "epsilon": 10.0,
+      "mean_one_way_tvd": 0.0592,
+      "corr_error": 0.0713,
+      "tstr_auc": 0.679,
+      "gen_seconds": 8.09
+    }
+  }
+}

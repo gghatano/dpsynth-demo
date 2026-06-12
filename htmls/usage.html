@@ -81,7 +81,7 @@ footer { max-width: 1180px; margin: 0 auto; padding: 24px; color: var(--muted); 
 <header class="hero"><div class="inner">
   <h1>DPSynth 解説・実証デモ</h1>
   <p>DPSynth の In-Memory API・CLI の利用方法と処理ライフサイクル</p>
-</div><nav class="nav"><a href="index.html">📄 レポート</a><a href="experiments.html">🧪 追加実験</a><a href="method-selection.html">🧭 手法選定</a><a href="method-mst.html">🌲 MST</a><a href="method-aim.html">♻️ AIM</a><a href="method-independent.html">📊 INDEPENDENT</a><a href="setup.html">🛠 環境構築</a><a href="usage.html" class="active">🔌 API・CLI</a><a href="reproduce.html">🔁 再現手順</a><a href="engineering-notes.html">🐞 実装ノート</a></nav></header>
+</div><nav class="nav"><a href="index.html">📄 レポート</a><a href="experiments.html">🧪 追加実験</a><a href="method-selection.html">🧭 手法選定</a><a href="method-mst.html">🌲 MST</a><a href="method-aim.html">♻️ AIM</a><a href="method-independent.html">📊 INDEPENDENT</a><a href="method-pgm.html">🧩 Private-PGM</a><a href="setup.html">🛠 環境構築</a><a href="usage.html" class="active">🔌 API・CLI</a><a href="reproduce.html">🔁 再現手順</a><a href="engineering-notes.html">🐞 実装ノート</a></nav></header>
 <div class="layout">
   <nav class="toc"><strong>目次</strong><div class="toc">
 <ul>
@@ -155,74 +155,74 @@ flowchart TD
 </table>
 <hr />
 <h2 id="3-in-memory-api-dpsynthgenerate">3. In-Memory API: <code>dpsynth.generate</code></h2>
-<pre class="codehilite"><code class="language-python">import dpsynth
-from dpsynth import discrete_mechanisms as dm
-from dpsynth import domain
-import pandas as pd
+<div class="codehilite"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">dpsynth</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dpsynth</span><span class="w"> </span><span class="kn">import</span> <span class="n">discrete_mechanisms</span> <span class="k">as</span> <span class="n">dm</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dpsynth</span><span class="w"> </span><span class="kn">import</span> <span class="n">domain</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 
-df = pd.read_csv(&quot;sensitive.csv&quot;)
+<span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s2">&quot;sensitive.csv&quot;</span><span class="p">)</span>
 
-domains = {
-    &quot;age&quot;: domain.NumericalAttribute(min_value=17, max_value=90, dtype=&quot;int&quot;, clip_to_range=True),
-    &quot;education&quot;: domain.CategoricalAttribute(possible_values=sorted(df[&quot;education&quot;].unique())),
-    &quot;occupation&quot;: domain.OpenSetCategoricalAttribute(default_value=&quot;Unknown&quot;),
-}
+<span class="n">domains</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;age&quot;</span><span class="p">:</span> <span class="n">domain</span><span class="o">.</span><span class="n">NumericalAttribute</span><span class="p">(</span><span class="n">min_value</span><span class="o">=</span><span class="mi">17</span><span class="p">,</span> <span class="n">max_value</span><span class="o">=</span><span class="mi">90</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;int&quot;</span><span class="p">,</span> <span class="n">clip_to_range</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+    <span class="s2">&quot;education&quot;</span><span class="p">:</span> <span class="n">domain</span><span class="o">.</span><span class="n">CategoricalAttribute</span><span class="p">(</span><span class="n">possible_values</span><span class="o">=</span><span class="nb">sorted</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;education&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">())),</span>
+    <span class="s2">&quot;occupation&quot;</span><span class="p">:</span> <span class="n">domain</span><span class="o">.</span><span class="n">OpenSetCategoricalAttribute</span><span class="p">(</span><span class="n">default_value</span><span class="o">=</span><span class="s2">&quot;Unknown&quot;</span><span class="p">),</span>
+<span class="p">}</span>
 
-synthetic = dpsynth.generate(
-    data=df,
-    domains=domains,
-    epsilon=1.0,
-    delta=1e-5,
-    discrete_config=dm.MSTConfig(seed=42),   # or AIMConfig / IndependentConfig
-    numerical_bins=16,
-)
-synthetic.to_csv(&quot;synthetic.csv&quot;, index=False)
-</code></pre>
+<span class="n">synthetic</span> <span class="o">=</span> <span class="n">dpsynth</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span>
+    <span class="n">data</span><span class="o">=</span><span class="n">df</span><span class="p">,</span>
+    <span class="n">domains</span><span class="o">=</span><span class="n">domains</span><span class="p">,</span>
+    <span class="n">epsilon</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+    <span class="n">delta</span><span class="o">=</span><span class="mf">1e-5</span><span class="p">,</span>
+    <span class="n">discrete_config</span><span class="o">=</span><span class="n">dm</span><span class="o">.</span><span class="n">MSTConfig</span><span class="p">(</span><span class="n">seed</span><span class="o">=</span><span class="mi">42</span><span class="p">),</span>   <span class="c1"># or AIMConfig / IndependentConfig</span>
+    <span class="n">numerical_bins</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">synthetic</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="s2">&quot;synthetic.csv&quot;</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</code></pre></div>
 
 <p>主な引数 <a href="index.html#ref4">[4]</a>: <code>epsilon</code> / <code>delta</code>(総予算)、<code>discrete_config</code>(機構)、<code>numerical_bins</code>(数値ビン数)、
 <code>one_way_marginal_budget_fraction</code>(1-way 測定+圧縮に割く予算割合)、<code>cross_attribute_constraints</code>(列間制約)、<code>skip_compression</code>。</p>
 <hr />
 <h2 id="4-yamlcli">4. ドメイン定義(YAML)とCLI</h2>
 <p>YAML の解釈規則と CLI フラグは公式ドキュメント準拠 <a href="index.html#ref6">[6]</a><a href="index.html#ref4">[4]</a>。</p>
-<pre class="codehilite"><code class="language-yaml"># domain.yaml : possible_values→Categorical / min_value+max_value→Numerical / 空→OpenSet
-workclass:
-  possible_values: [&quot;?&quot;, &quot;Private&quot;, &quot;Self-emp-not-inc&quot;, &quot;Federal-gov&quot;]
-  out_of_domain_index: 0
-age:
-  min_value: 17.0
-  max_value: 90.0
-  dtype: &quot;int&quot;
-  clip_to_range: true
-occupation: {}
-</code></pre>
+<div class="codehilite"><pre><span></span><code><span class="c1"># domain.yaml : possible_values→Categorical / min_value+max_value→Numerical / 空→OpenSet</span>
+<span class="nt">workclass</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">possible_values</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;?&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;Private&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;Self-emp-not-inc&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;Federal-gov&quot;</span><span class="p p-Indicator">]</span>
+<span class="w">  </span><span class="nt">out_of_domain_index</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0</span>
+<span class="nt">age</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">min_value</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">17.0</span>
+<span class="w">  </span><span class="nt">max_value</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">90.0</span>
+<span class="w">  </span><span class="nt">dtype</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;int&quot;</span>
+<span class="w">  </span><span class="nt">clip_to_range</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="nt">occupation</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">{}</span>
+</code></pre></div>
 
-<pre class="codehilite"><code class="language-bash">python3 bin/main.py \
-  --dataset=data.csv --domain=domain.yaml \
-  --epsilon=1.0 --delta=1e-8 \
-  --mechanism=mst --seed=12345 \
-  --output_path=/tmp/synthetic.csv
-# --mechanism: mst | aim | independent | aim_gdp
-</code></pre>
+<div class="codehilite"><pre><span></span><code>python3<span class="w"> </span>bin/main.py<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--dataset<span class="o">=</span>data.csv<span class="w"> </span>--domain<span class="o">=</span>domain.yaml<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--epsilon<span class="o">=</span><span class="m">1</span>.0<span class="w"> </span>--delta<span class="o">=</span>1e-8<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--mechanism<span class="o">=</span>mst<span class="w"> </span>--seed<span class="o">=</span><span class="m">12345</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--output_path<span class="o">=</span>/tmp/synthetic.csv
+<span class="c1"># --mechanism: mst | aim | independent | aim_gdp</span>
+</code></pre></div>
 
 <hr />
 <h2 id="5-scalable-beam-api">5. Scalable Beam API（参考・本レポートでは未評価）</h2>
 <p>分散実行は <code>data_generation.generate</code> + <code>BeamBackend</code> を用いる <a href="index.html#ref7">[7]</a>。
 <strong>本レポートの実験では未評価</strong>であり、ここでは利用方法の参考として示す。</p>
-<pre class="codehilite"><code class="language-python">import apache_beam as beam
-from dpsynth import data_generation
-from dpsynth.dataset_descriptors import csv_descriptor
-import pipeline_dp
+<div class="codehilite"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">apache_beam</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">beam</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dpsynth</span><span class="w"> </span><span class="kn">import</span> <span class="n">data_generation</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dpsynth.dataset_descriptors</span><span class="w"> </span><span class="kn">import</span> <span class="n">csv_descriptor</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pipeline_dp</span>
 
-config = data_generation.DataGenerationConfig(
-    epsilon=1.0, delta=1e-5,
-    mechanism=data_generation.Mechanism.MST,
-    dataset_descriptor=descriptor,
-    num_out_records=1000,
-)
-with beam.Pipeline() as p:
-    records = p | beam.io.ReadFromText(&quot;adult.csv&quot;, skip_header_lines=1) | beam.Map(parse)
-    synthetic = data_generation.generate(input_data=records, config=config, backend=pipeline_dp.BeamBackend())
-</code></pre>
+<span class="n">config</span> <span class="o">=</span> <span class="n">data_generation</span><span class="o">.</span><span class="n">DataGenerationConfig</span><span class="p">(</span>
+    <span class="n">epsilon</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">delta</span><span class="o">=</span><span class="mf">1e-5</span><span class="p">,</span>
+    <span class="n">mechanism</span><span class="o">=</span><span class="n">data_generation</span><span class="o">.</span><span class="n">Mechanism</span><span class="o">.</span><span class="n">MST</span><span class="p">,</span>
+    <span class="n">dataset_descriptor</span><span class="o">=</span><span class="n">descriptor</span><span class="p">,</span>
+    <span class="n">num_out_records</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="k">with</span> <span class="n">beam</span><span class="o">.</span><span class="n">Pipeline</span><span class="p">()</span> <span class="k">as</span> <span class="n">p</span><span class="p">:</span>
+    <span class="n">records</span> <span class="o">=</span> <span class="n">p</span> <span class="o">|</span> <span class="n">beam</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">ReadFromText</span><span class="p">(</span><span class="s2">&quot;adult.csv&quot;</span><span class="p">,</span> <span class="n">skip_header_lines</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">|</span> <span class="n">beam</span><span class="o">.</span><span class="n">Map</span><span class="p">(</span><span class="n">parse</span><span class="p">)</span>
+    <span class="n">synthetic</span> <span class="o">=</span> <span class="n">data_generation</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span><span class="n">input_data</span><span class="o">=</span><span class="n">records</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="n">config</span><span class="p">,</span> <span class="n">backend</span><span class="o">=</span><span class="n">pipeline_dp</span><span class="o">.</span><span class="n">BeamBackend</span><span class="p">())</span>
+</code></pre></div>
 
 <hr />
 <p>← <a href="index.html">実証評価レポートに戻る</a></p></article>

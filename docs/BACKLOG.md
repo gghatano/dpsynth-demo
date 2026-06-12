@@ -13,5 +13,8 @@
 | 7 | データ取得の固定化（チェックサム/ベンダリング） | `reproducibility` | jbrownlee ミラーの消失リスクに備え、SHA256 検証 or データ同梱を検討 |
 | 8 | cross-attribute constraints のデモ | `enhancement` `docs` | 列間制約（例: education と educational-num の整合）を使った生成例を追加 |
 | 9 | 複数シード平均を本体レポートにも反映 | `docs` `reproducibility` | 実験Bの mean±std を要約として §6 に取り込み、単一シード依存の注意を強化 |
+| 10 | AIM の ε スイープ実測を取得（method-aim §7） | `enhancement` `reproducibility` | ✅対応済(Issue #13): memlock 制約のないローカル WSL2 で ε=0.5/1.0/2.0/10.0 を完走取得し §7 を確定（`experiments/aim_eps_sweep_local.json`・`scripts/12_aim_eps_sweep.py`・`figures/fig5_*`）。所見=単一シードでは分散支配で ε トレンド判定不能 → Issue #14 へ |
+| 11 | AIM ε スイープを複数シードで再評価 | `enhancement` `reproducibility` | 単一シードの §7 スイープは run-to-run 分散（実験B: TSTR ±0.153）に支配され ε トレンドが判定不能。複数シードで mean±std を取り ε 依存と分散を分離。あわせて `max_rounds`/`max_model_size` の感度も評価（Issue #14・#13 残課題①②） |
+| 12 | 環境間のベースライン再現性を担保（数値差の定量化/固定環境での全再生成） | `reproducibility` | ローカル WSL2 再実行で `outputs/metrics.json` がコミット済み値と乖離（例: aim_eps1 相関誤差 0.226→0.007・TSTR 0.768→0.649）。jaxlib/XLA の数値挙動差が原因。固定環境(コンテナ)での全再生成か、許容差の明記が必要（Issue #15・#13 残課題③・BACKLOG #1 と関連） |
 
 > ラベルは `create_issues.sh` が存在しなければ自動作成します（既存なら無視）。

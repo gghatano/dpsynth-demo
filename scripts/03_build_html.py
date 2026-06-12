@@ -8,6 +8,7 @@
     htmls/experiments.html       … 追加実験
     htmls/method-selection.html  … 手法選定ガイド
     htmls/method-{mst,aim,independent}.html … 各機構の解説
+    htmls/method-pgm.html        … 共有推定エンジン Private-PGM の解説
     htmls/.nojekyll
 """
 
@@ -48,6 +49,9 @@ PAGES = [
     {"md": "method-independent.md", "out": "method-independent.html",
      "subtitle": "INDEPENDENT — 全列を独立にモデル化する最速のベースライン機構の解説",
      "key": "independent"},
+    {"md": "method-pgm.md", "out": "method-pgm.html",
+     "subtitle": "Private-PGM（mbi）— MST / AIM / INDEPENDENT が共有する、測定済みマージナルから同時分布を推定する共通エンジンの解説",
+     "key": "pgm"},
     {"md": "setup.md", "out": "setup.html",
      "subtitle": "実験を再現するための環境構築と依存関係のノート",
      "key": "setup"},
@@ -111,7 +115,8 @@ def rewrite_links(html: str) -> str:
     local_pages = ("index.html", "experiments.html", "setup.html",
                    "usage.html", "reproduce.html", "engineering-notes.html",
                    "method-selection.html", "method-mst.html",
-                   "method-aim.html", "method-independent.html")
+                   "method-aim.html", "method-independent.html",
+                   "method-pgm.html")
 
     def repl(m: re.Match) -> str:
         href = m.group(1)
@@ -216,6 +221,7 @@ def build_nav(active_key: str, available: set[str]) -> str:
              ("mst", "method-mst.html", "🌲 MST"),
              ("aim", "method-aim.html", "♻️ AIM"),
              ("independent", "method-independent.html", "📊 INDEPENDENT"),
+             ("pgm", "method-pgm.html", "🧩 Private-PGM"),
              ("setup", "setup.html", "🛠 環境構築"),
              ("usage", "usage.html", "🔌 API・CLI"),
              ("reproduce", "reproduce.html", "🔁 再現手順"),

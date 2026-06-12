@@ -18,6 +18,7 @@
 | 3 | 未宣言の依存 | `tqdm` が `dependencies` に無く ImportError | 追加インストールで解決 |
 | 4 | INDEPENDENT 機構のクラッシュ | `generate()` が常に渡す 1-way 測定値 [\[11\]](index.html#ref11) の上に、INDEPENDENT が同じ 1-way を再測定する [\[12\]](index.html#ref12) ため、`mbi` 新版の `CliqueVector.expand` が「Cliques must be unique」で例外 | `expand` へ渡すクリーク列を重複排除する **1 行修正**で解決（予算消費は不変） |
 | 5 | 小さい ε での会計破綻 | ε=0.1 でノイズ較正の区間探索が失敗(`NoBracketIntervalFoundError`) | スイープを ε≥0.5 に調整 |
+| 6 | AIM の ε スイープが JIT で失敗 | 一部リモート環境の `RLIMIT_MEMLOCK`(`ulimit -l` 8192KB・引き上げ不可)上限で、AIM（ε≥0.5 で大きい MRF カーネル）の XLA/LLVM JIT がセクションメモリ確保に失敗（`Cannot allocate memory`）。ε ごとのプロセス分離・`XLA_FLAGS` 緩和でも再現 | **memlock 制約のないローカル(WSL2・`ulimit -l`=65536KB)で 4 本を完走**して取得（ε=0.5/1.0/2.0/10.0、生成 242/73/350/458s）。[Issue #13](https://github.com/gghatano/dpsynth-demo/issues/13) |
 
 ---
 
@@ -49,6 +50,22 @@ Python のバージョン制約も `>=3.12,<3.14` と狭い。対処として WS
 
 `ε=0.1` のような極端に強いプライバシー設定では、ノイズ較正の区間探索が失敗し `NoBracketIntervalFoundError` となる。
 本デモでは ε を変える比較の範囲を `ε≥0.5` に調整して回避した。
+
+### 問題6: AIM ε スイープの JIT メモリ確保失敗（環境依存）
+
+AIM は ε≥0.5 で MST より大きいグラフィカルモデル（MRF）の推論カーネルを JIT する。
+`RLIMIT_MEMLOCK`（`ulimit -l`）が低く固定された一部のサンドボックス環境では、この JIT 時に
+LLVM のセクションメモリ確保が memlock 上限に頭打ちし、`Cannot allocate memory` /
+`Unable to allocate section memory` で完走しなかった（ε=0.5/2.0/10.0、各 ~230–300s 走った末に失敗）。
+ε ごとにプロセスを分離しても、`XLA_FLAGS` を緩めても再現する**環境固有**の制約である
+（小さいカーネルで早く収束する ε=1.0 のみ通っていた）。
+対処として、memlock 制約のないローカル環境（WSL2・Ubuntu 24.04・`ulimit -l`=65536KB）で
+`scripts/01_generate.py`→`02_evaluate.py` を一括実行し、ε=0.5/1.0/2.0/10.0 の 4 本すべてを取得した。
+高 ε ほど生成時間が伸び（73→350→458 秒）、これは「高 ε ほど測定マージナルが大きくなる」AIM の
+計算資源依存性そのものであり、上記の JIT 失敗が高 ε で起きやすかったことと符合する。
+取得値は `experiments/aim_eps_sweep_local.json`、可視化は `scripts/12_aim_eps_sweep.py` に分離した
+（このローカル実行は別環境のため、コミット済みベースライン `outputs/metrics.json`・図2 は上書きしていない。
+詳細は [AIM 解説 §7](method-aim.html#7)）。
 
 ---
 

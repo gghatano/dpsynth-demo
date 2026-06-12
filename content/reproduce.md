@@ -35,7 +35,8 @@ bash scripts/run_all.sh
 .venv/bin/python scripts/01_generate.py       # 合成データ生成（MST/AIM/INDEPENDENT + ε スイープ・単一シード簡易パス）
 .venv/bin/python scripts/02_evaluate.py       # 1-way TVD / 相関誤差 / TSTR と図
 .venv/bin/python scripts/10_experiments.py    # 追加実験 A/B/C
-.venv/bin/python scripts/10_experiments.py e  # 追加実験E（マルチシード ε スイープ・重い／EXP_E_FAST=1 で軽量プリラン）
+EXP_E_FAST=1 .venv/bin/python scripts/10_experiments.py e  # 実験E 軽量プリラン（疎通確認）
+.venv/bin/python scripts/10_experiments.py e  # 実験E 本実行（重い／途中失敗時は EXP_E_RESUME=1 で再開）
 .venv/bin/python scripts/11_mia.py            # 追加実験D（MIA）
 .venv/bin/python scripts/03_build_html.py     # htmls/ 配下の各 HTML を生成
 ```

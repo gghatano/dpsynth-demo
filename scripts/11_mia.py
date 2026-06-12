@@ -102,7 +102,14 @@ def main():
     }
     results = {}
     for name, src in targets.items():
-        syn = src if isinstance(src, pd.DataFrame) else pd.read_csv(src)[COLS]
+        if isinstance(src, pd.DataFrame):
+            syn = src
+        elif src.exists():
+            syn = pd.read_csv(src)[COLS]
+        else:
+            # 01_generate.py で当該機構が失敗し CSV が無い場合はスキップ（run_all を止めない）
+            print(f"  {name:18} SKIP（{src.name} が無い: 生成が失敗した可能性）")
+            continue
         auc = mia_auc(syn, members, nonmembers, enc)
         results[name] = round(auc, 4)
         print(f"  {name:18} MIA AUC = {auc:.3f}")

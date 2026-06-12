@@ -42,6 +42,19 @@ if [ ! -d src ]; then
   fi
 else
   echo "[setup] src/ already exists, skipping clone"
+  if [ -n "$DPSYNTH_REF" ]; then
+    # 既存 src/ でも DPSYNTH_REF が指定されたら必ずその版へ合わせる（B3: 固定の取りこぼし防止）
+    cur="$(git -C src rev-parse HEAD 2>/dev/null || echo unknown)"
+    if [ "$cur" != "$DPSYNTH_REF" ]; then
+      echo "[setup] re-pinning existing src/ to DPSYNTH_REF=$DPSYNTH_REF (was $cur)"
+      # 既存 src/ は sed/パッチで作業ツリーが汚れているため、checkout 前にクリーン化する。
+      # tensorflow 除去・INDEPENDENT パッチは後続ステップ(3-5)が冪等に再適用する。
+      git -C src reset --hard
+      git -C src fetch --depth 1 origin "$DPSYNTH_REF" 2>/dev/null \
+        || git -C src fetch origin
+      git -C src checkout "$DPSYNTH_REF"
+    fi
+  fi
 fi
 # 実際に取得した upstream コミットを記録（プロビナンス）
 git -C src rev-parse HEAD > src_commit.txt 2>/dev/null \

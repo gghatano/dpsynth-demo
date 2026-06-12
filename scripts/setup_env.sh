@@ -26,12 +26,26 @@ export PATH="$HOME/.local/bin:$PATH"
 uv --version
 
 # 2. clone dpsynth
+#    再現性（Issue #15）: upstream を特定コミットに固定できるよう DPSYNTH_REF を用意する。
+#    例)  DPSYNTH_REF=<commit-sha> bash scripts/setup_env.sh
+#    未指定なら main の最新を取得し、解決された SHA を src_commit.txt に記録する
+#    （固定環境＝WSL を確立する際は、この SHA を控えて以後 DPSYNTH_REF に渡すこと）。
+DPSYNTH_REF="${DPSYNTH_REF:-}"
 if [ ! -d src ]; then
-  echo "[setup] cloning google/dpsynth -> src/"
-  git clone --depth 1 https://github.com/google/dpsynth.git src
+  if [ -n "$DPSYNTH_REF" ]; then
+    echo "[setup] cloning google/dpsynth@$DPSYNTH_REF -> src/"
+    git clone https://github.com/google/dpsynth.git src
+    git -C src checkout "$DPSYNTH_REF"
+  else
+    echo "[setup] cloning google/dpsynth (latest main) -> src/  ※再現性のため DPSYNTH_REF の指定を推奨"
+    git clone --depth 1 https://github.com/google/dpsynth.git src
+  fi
 else
   echo "[setup] src/ already exists, skipping clone"
 fi
+# 実際に取得した upstream コミットを記録（プロビナンス）
+git -C src rev-parse HEAD > src_commit.txt 2>/dev/null \
+  && echo "[setup] upstream dpsynth commit = $(cat src_commit.txt) (recorded in src_commit.txt)"
 
 # 3. tensorflow を除外（In-Memory デモには不要・重い）
 sed -i '/"tensorflow",/d' src/pyproject.toml

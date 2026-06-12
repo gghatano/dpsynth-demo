@@ -32,9 +32,10 @@ bash scripts/run_all.sh
 
 ```bash
 .venv/bin/python scripts/00_prepare_data.py   # Adult データ取得・整形（data/adult.csv）
-.venv/bin/python scripts/01_generate.py       # 合成データ生成（MST/AIM/INDEPENDENT + ε スイープ）
+.venv/bin/python scripts/01_generate.py       # 合成データ生成（MST/AIM/INDEPENDENT + ε スイープ・単一シード簡易パス）
 .venv/bin/python scripts/02_evaluate.py       # 1-way TVD / 相関誤差 / TSTR と図
 .venv/bin/python scripts/10_experiments.py    # 追加実験 A/B/C
+.venv/bin/python scripts/10_experiments.py e  # 追加実験E（マルチシード ε スイープ・重い／EXP_E_FAST=1 で軽量プリラン）
 .venv/bin/python scripts/11_mia.py            # 追加実験D（MIA）
 .venv/bin/python scripts/03_build_html.py     # htmls/ 配下の各 HTML を生成
 ```
@@ -65,12 +66,25 @@ bash scripts/run_all.sh
 
 ## 4. 再現性に関する注意
 
-レポート本体の主表は**単一シード(`seed=42`)・特定の依存バージョンでの代表的な 1 実行**である。
-新規インストールでは `jax` / `mbi` 等のバージョン差で乱数列が変わり、**個々の数値は多少前後する**
-(実測でも別環境で MST の平均 TVD が 0.098→0.109、INDEPENDENT の TSTR AUC が 0.433→0.546 などの変動を確認)。
-ただし**定性的傾向(機構の優劣・トレードオフの向き)は再現される**。
-厳密な数値比較を行う場合は依存バージョンを固定し、複数シードで平均を取ることを推奨する
-（複数シードの mean±std は [追加実験](experiments.html) 実験Bを参照）。
+### 固定環境は WSL2（Issue #15）
+
+DP 機構は `jax` / `jaxlib` / `mbi` のバージョン差で乱数列・数値挙動が変わるため、
+**同じ `seed=42` でも環境が変われば個々の数値は乖離する**（実測で `aim_eps1` の相関誤差が
+環境間で 0.226↔0.007、TSTR AUC が 0.768↔0.649 と大きく動いた例がある — Issue #15）。
+本リポジトリは**固定環境を WSL2 + `requirements.txt` のピン留め依存**と定め、
+数値はその環境での再生成値で統一する。再現時は以下を揃えること:
+
+- **Python / 依存**: `requirements.txt`（`jax==0.7.1` / `jaxlib==0.7.1` ほか、`mbi` はコミットハッシュ固定）
+- **upstream dpsynth**: `setup_env.sh` 実行後に `src_commit.txt` へ記録される SHA を控え、
+  以後は `DPSYNTH_REF=<sha> bash scripts/setup_env.sh` で固定する。
+
+### 単一シードと複数シード
+
+レポート本体の主表・図2 は**単一シード(`seed=42`)の代表的な 1 実行**で、ε トレンドは
+run-to-run 分散に埋もれることがある（Issue #14）。**ε を変えたときの傾向は複数シードの
+mean±std で判断する**こと（[追加実験](experiments.html) 実験B = ε=1 の機構比較、
+実験E = マルチシード ε スイープ）。定性的傾向（機構の優劣・トレードオフの向き）は環境を
+跨いでも再現される。
 
 ---
 

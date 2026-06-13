@@ -217,13 +217,13 @@ flowchart LR
 <ul>
 <li><strong>機構比較（ε=1.0、<a href="index.html">メインレポート §5.1</a>）</strong>: 平均 1-way TVD 0.101、相関誤差 0.089、
   TSTR AUC 0.663、生成時間<strong>約 10 秒</strong>（単一シード）。</li>
-<li><strong>複数シード（<a href="experiments.html">追加実験B</a>）</strong>: TSTR AUC 0.687 ± 0.068（10 シード）。
-  AIM（0.677 ± 0.117）と<strong>ほぼ同等</strong>で、優劣はシード次第で逆転しうる。</li>
+<li><strong>複数シード（<a href="experiments.html">追加実験B</a>）</strong>: TSTR AUC 0.651 ± 0.106（10 シード）。
+  AIM（0.709 ± 0.051）をやや下回るが標準偏差が重なり、優劣はシード次第で逆転しうる（AIM ≳ MST）。</li>
 <li><strong>2-way 忠実度（<a href="experiments.html">追加実験C</a>）</strong>: ペアによって明暗が分かれる。
   <code>education×income</code> は 0.024 と良好だが、木から外れた <code>marital-status×income</code>（0.359）・
   <code>occupation×income</code>（0.282）は大きく崩れ、<strong>INDEPENDENT より悪い</strong>ケースもあった。</li>
 <li><strong>ε スイープ（複数シード・<a href="experiments.html">追加実験E</a>）</strong>: ε を 0.5 → 10 に上げると平均 1-way TVD は
-  0.085 → 0.061 へおおむね改善する（ε=0.5→1.0 は分散内の微増、それ以降は単調低下。標準偏差も ε とともに縮む）。</li>
+  0.089 → 0.061 へおおむね改善する（ε=0.5→1.0 は分散内の微増、それ以降は単調低下。標準偏差も ε とともに縮む）。</li>
 </ul>
 <h3 id="_1">全域木制約による「ペアの崩れ」（アルゴリズム由来の解釈）</h3>
 <blockquote class="badge-note">

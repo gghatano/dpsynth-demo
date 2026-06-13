@@ -59,13 +59,14 @@ LLVM のセクションメモリ確保が memlock 上限に頭打ちし、`Canno
 `Unable to allocate section memory` で完走しなかった（ε=0.5/2.0/10.0、各 ~230–300s 走った末に失敗）。
 ε ごとにプロセスを分離しても、`XLA_FLAGS` を緩めても再現する**環境固有**の制約である
 （小さいカーネルで早く収束する ε=1.0 のみ通っていた）。
-対処として、memlock 制約のないローカル環境（WSL2・Ubuntu 24.04・`ulimit -l`=65536KB）で
-`scripts/01_generate.py`→`02_evaluate.py` を一括実行し、ε=0.5/1.0/2.0/10.0 の 4 本すべてを取得した。
-高 ε ほど生成時間が伸び（73→350→458 秒）、これは「高 ε ほど測定マージナルが大きくなる」AIM の
+対処として、**memlock 制約のない WSL2（Ubuntu 24.04・`ulimit -l`=65536KB）を唯一の固定環境と定め**、
+`scripts/run_all.sh` で全パイプライン（生成→評価→追加実験→ビルド）を一括再生成した（Issue #17）。
+高 ε ほど生成時間が伸び（ε=1 の約 70 秒に対し ε=10 で約 420 秒）、これは「高 ε ほど測定マージナルが大きくなる」AIM の
 計算資源依存性そのものであり、上記の JIT 失敗が高 ε で起きやすかったことと符合する。
-取得値は `experiments/aim_eps_sweep_local.json`、可視化は `scripts/12_aim_eps_sweep.py` に分離した
-（このローカル実行は別環境のため、コミット済みベースライン `outputs/metrics.json`・図2 は上書きしていない。
-詳細は [AIM 解説 §7](method-aim.html#7)）。
+ε スイープは当初 `scripts/12_aim_eps_sweep.py`（単一シード・`aim_eps_sweep_local.json`）で取得していたが、
+単一シードでは run-to-run 分散が ε トレンドを覆ったため（Issue #14）、現在は **`scripts/10_experiments.py` の
+実験E（マルチシード ε スイープ・mean±std）を正**とし、レポートの数値・図はすべてこの WSL 固定環境の
+単一の実行系列で統一している（詳細は [AIM 解説 §7](method-aim.html#7)・[追加実験E](experiments.html)）。
 
 ---
 

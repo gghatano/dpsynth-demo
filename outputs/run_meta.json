@@ -31,49 +31,73 @@
       "tag": "mst_eps1",
       "epsilon": 1.0,
       "delta": 1e-05,
-      "rows": 19887,
-      "seconds": 9.84,
+      "rows": 20158,
+      "seconds": 9.88,
       "file": "synthetic_mst_eps1.csv"
     },
     {
       "tag": "aim_eps1",
       "epsilon": 1.0,
       "delta": 1e-05,
-      "rows": 19997,
-      "seconds": 89.89,
+      "rows": 19930,
+      "seconds": 68.27,
       "file": "synthetic_aim_eps1.csv"
     },
     {
       "tag": "independent_eps1",
       "epsilon": 1.0,
       "delta": 1e-05,
-      "rows": 19983,
-      "seconds": 6.11,
+      "rows": 20001,
+      "seconds": 5.92,
       "file": "synthetic_independent_eps1.csv"
     },
     {
       "tag": "mst_eps0.5",
       "epsilon": 0.5,
       "delta": 1e-05,
-      "rows": 20136,
-      "seconds": 9.59,
+      "rows": 20063,
+      "seconds": 8.58,
       "file": "synthetic_mst_eps0.5.csv"
     },
     {
       "tag": "mst_eps2.0",
       "epsilon": 2.0,
       "delta": 1e-05,
-      "rows": 19953,
-      "seconds": 7.41,
+      "rows": 19940,
+      "seconds": 9.1,
       "file": "synthetic_mst_eps2.0.csv"
     },
     {
       "tag": "mst_eps10.0",
       "epsilon": 10.0,
       "delta": 1e-05,
-      "rows": 20021,
-      "seconds": 8.74,
+      "rows": 20005,
+      "seconds": 7.28,
       "file": "synthetic_mst_eps10.0.csv"
+    },
+    {
+      "tag": "aim_eps0.5",
+      "epsilon": 0.5,
+      "delta": 1e-05,
+      "rows": 20051,
+      "seconds": 68.19,
+      "file": "synthetic_aim_eps0.5.csv"
+    },
+    {
+      "tag": "aim_eps2.0",
+      "epsilon": 2.0,
+      "delta": 1e-05,
+      "rows": 20056,
+      "seconds": 276.85,
+      "file": "synthetic_aim_eps2.0.csv"
+    },
+    {
+      "tag": "aim_eps10.0",
+      "epsilon": 10.0,
+      "delta": 1e-05,
+      "rows": 20008,
+      "seconds": 423.47,
+      "file": "synthetic_aim_eps10.0.csv"
     }
   ]
 }

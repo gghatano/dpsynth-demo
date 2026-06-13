@@ -91,7 +91,11 @@ footer { max-width: 1180px; margin: 0 auto; padding: 24px; color: var(--muted); 
 <li><a href="#_2">入力・出力ファイルの場所</a></li>
 </ul>
 </li>
-<li><a href="#4">4. 再現性に関する注意</a></li>
+<li><a href="#4">4. 再現性に関する注意</a><ul>
+<li><a href="#wsl2issue-15">固定環境は WSL2（Issue #15）</a></li>
+<li><a href="#_3">単一シードと複数シード</a></li>
+</ul>
+</li>
 <li><a href="#5-github-pages">5. GitHub Pages 公開</a></li>
 </ul>
 </div>
@@ -121,9 +125,11 @@ bash<span class="w"> </span>scripts/run_all.sh
 <h2 id="2">2. 個別実行</h2>
 <p>各段階を個別に動かす場合は以下のとおり。</p>
 <div class="codehilite"><pre><span></span><code>.venv/bin/python<span class="w"> </span>scripts/00_prepare_data.py<span class="w">   </span><span class="c1"># Adult データ取得・整形（data/adult.csv）</span>
-.venv/bin/python<span class="w"> </span>scripts/01_generate.py<span class="w">       </span><span class="c1"># 合成データ生成（MST/AIM/INDEPENDENT + ε スイープ）</span>
+.venv/bin/python<span class="w"> </span>scripts/01_generate.py<span class="w">       </span><span class="c1"># 合成データ生成（MST/AIM/INDEPENDENT + ε スイープ・単一シード簡易パス）</span>
 .venv/bin/python<span class="w"> </span>scripts/02_evaluate.py<span class="w">       </span><span class="c1"># 1-way TVD / 相関誤差 / TSTR と図</span>
 .venv/bin/python<span class="w"> </span>scripts/10_experiments.py<span class="w">    </span><span class="c1"># 追加実験 A/B/C</span>
+<span class="nv">EXP_E_FAST</span><span class="o">=</span><span class="m">1</span><span class="w"> </span>.venv/bin/python<span class="w"> </span>scripts/10_experiments.py<span class="w"> </span>e<span class="w">  </span><span class="c1"># 実験E 軽量プリラン（疎通確認）</span>
+.venv/bin/python<span class="w"> </span>scripts/10_experiments.py<span class="w"> </span>e<span class="w">  </span><span class="c1"># 実験E 本実行（重い／途中失敗時は EXP_E_RESUME=1 で再開）</span>
 .venv/bin/python<span class="w"> </span>scripts/11_mia.py<span class="w">            </span><span class="c1"># 追加実験D（MIA）</span>
 .venv/bin/python<span class="w"> </span>scripts/03_build_html.py<span class="w">     </span><span class="c1"># htmls/ 配下の各 HTML を生成</span>
 </code></pre></div>
@@ -178,12 +184,26 @@ bash<span class="w"> </span>scripts/run_all.sh
 </ul>
 <hr />
 <h2 id="4">4. 再現性に関する注意</h2>
-<p>レポート本体の主表は<strong>単一シード(<code>seed=42</code>)・特定の依存バージョンでの代表的な 1 実行</strong>である。
-新規インストールでは <code>jax</code> / <code>mbi</code> 等のバージョン差で乱数列が変わり、<strong>個々の数値は多少前後する</strong>
-(実測でも別環境で MST の平均 TVD が 0.098→0.109、INDEPENDENT の TSTR AUC が 0.433→0.546 などの変動を確認)。
-ただし<strong>定性的傾向(機構の優劣・トレードオフの向き)は再現される</strong>。
-厳密な数値比較を行う場合は依存バージョンを固定し、複数シードで平均を取ることを推奨する
-（複数シードの mean±std は <a href="experiments.html">追加実験</a> 実験Bを参照）。</p>
+<h3 id="wsl2issue-15">固定環境は WSL2（Issue #15）</h3>
+<p>DP 機構は <code>jax</code> / <code>jaxlib</code> / <code>mbi</code> のバージョン差で乱数列・数値挙動が変わるため、
+<strong>同じ <code>seed=42</code> でも環境が変われば個々の数値は乖離する</strong>（実測で <code>aim_eps1</code> の相関誤差が
+環境/シード間で 0.226 / 0.007 / 0.404 と大きく動いた例がある — Issue #15）。
+本リポジトリは<strong>固定環境を WSL2 + <code>requirements.txt</code> のピン留め依存</strong>と定め、
+レポートの数値・図は <strong>すべてこの固定環境の単一の実行系列</strong>（<code>run_all.sh</code> 一括実行）で再生成して統一している（Issue #17）。
+本レポートの数値を確定した固定環境は次のとおり:</p>
+<ul>
+<li><strong>OS / Python</strong>: WSL2（Ubuntu 24.04）／ Python 3.12.3</li>
+<li><strong>主要依存</strong>: <code>requirements.txt</code> でピン留め（<code>jax==0.7.1</code> / <code>jaxlib==0.7.1</code> / <code>numpy==1.26.4</code> /
+  <code>scikit-learn==1.8.0</code> / <code>scipy==1.17.1</code> / <code>pandas==3.0.3</code> / <code>matplotlib==3.10.9</code>、<code>mbi</code> はコミットハッシュ固定）</li>
+<li><strong>upstream dpsynth</strong>: <code>c17e714818c3e62375246f0e1b59e486244a469d</code>（<code>setup_env.sh</code> 実行後に <code>src_commit.txt</code> へ記録）。
+  以後は <code>DPSYNTH_REF=c17e71481… bash scripts/setup_env.sh</code> で固定する。</li>
+</ul>
+<h3 id="_3">単一シードと複数シード</h3>
+<p>レポート本体の主表・図2 は<strong>単一シード(<code>seed=42</code>)の代表的な 1 実行</strong>で、ε トレンドは
+run-to-run 分散に埋もれることがある（Issue #14）。<strong>ε を変えたときの傾向は複数シードの
+mean±std で判断する</strong>こと（<a href="experiments.html">追加実験</a> 実験B = ε=1 の機構比較、
+実験E = マルチシード ε スイープ）。定性的傾向（機構の優劣・トレードオフの向き）は環境を
+跨いでも再現される。</p>
 <hr />
 <h2 id="5-github-pages">5. GitHub Pages 公開</h2>
 <p><code>REPORT.md</code> ほかの Markdown と <code>figures/</code> から、<code>scripts/03_build_html.py</code> が自己完結型 HTML を生成し、

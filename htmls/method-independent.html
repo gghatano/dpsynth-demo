@@ -186,8 +186,8 @@ flowchart LR
 <ul>
 <li><strong>機構比較（ε=1.0、<a href="index.html">メインレポート §5.1</a>）</strong>: 平均 1-way TVD 0.106 は他機構と同水準だが、
   TSTR AUC <strong>0.433</strong>・F1 <strong>0.003</strong> と下流タスクでは壊滅的。生成時間は最速の<strong>約 6 秒</strong>。</li>
-<li><strong>複数シード（<a href="experiments.html">追加実験B</a>）</strong>: 平均 1-way TVD 0.086 ± 0.020 は<strong>むしろ 3 機構で最良</strong>。
-  しかし TSTR AUC 0.490 ± 0.090 で<strong>一貫して最下位</strong>。「1-way の一致は下流の有用性を意味しない」ことの実例。</li>
+<li><strong>複数シード（<a href="experiments.html">追加実験B</a>）</strong>: 平均 1-way TVD 0.091 ± 0.017 は他機構と<strong>同程度</strong>（1-way では機構差は出ない）。
+  しかし TSTR AUC 0.506 ± 0.065 で<strong>一貫して最下位</strong>。「1-way の一致は下流の有用性を意味しない」ことの実例。</li>
 <li><strong>2-way 忠実度（<a href="experiments.html">追加実験C</a>）</strong>: 全ペアで AIM に劣るが、
   <code>marital-status×income</code>・<code>occupation×income</code> では <strong>MST より良かった</strong>
   （MST の全域木から外れたペアでは、誤った相関を張るより独立仮定の方がマシになる場合がある）。</li>

@@ -171,7 +171,7 @@ def exp_b(real, domains, train, test, categories):
         ("MST", lambda s: dm.MSTConfig(seed=s), list(range(10))),
         ("INDEPENDENT", lambda s: dm.IndependentConfig(seed=s), list(range(10))),
         ("AIM", lambda s: dm.AIMConfig(seed=s, max_rounds=16, pgm_iters=1000,
-                                       max_model_size=100), list(range(5))),
+                                       max_model_size=100), list(range(10))),
     ]
     summary = {}
     for name, cfg, seeds in plans:
@@ -297,7 +297,7 @@ def exp_e(real, domains, train, test, categories, mfile=None, metrics=None):
     else:
         plans = [("MST", lambda s: dm.MSTConfig(seed=s), list(range(10))),
                  ("AIM", lambda s: dm.AIMConfig(seed=s, max_rounds=16, pgm_iters=1000,
-                                                max_model_size=100), list(range(5))),
+                                                max_model_size=100), list(range(10))),
                  ("INDEPENDENT", lambda s: dm.IndependentConfig(seed=s), list(range(10)))]
 
     print(f"\n== 実験E: マルチシード ε スイープ (fast={fast}, resume={resume}, eps={eps_list}) ==")
